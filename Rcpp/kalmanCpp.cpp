@@ -74,8 +74,7 @@ List kalmanCpp(const mat& X, const vec& a0_0, const mat& P0_0, const mat& A,
     Pt_t.slice(t + 1) = Pt_tlag.slice(t) - KG * Lambda_t * Pt_tlag.slice(t);
 
     // Calculate log-likelihood
-    const double inov_cov_det = prod(diagvec(Sig_e_t)) * det(GG); // see Harvey (1990)
-    logl -= 0.5 * (inov_res.n_elem * log(2 * datum::pi) + log(abs(inov_cov_det))
+    logl -= 0.5 * (sum(log(abs(diagvec(Sig_e_t)))) + log(abs(det(GG)))
         + as_scalar(inov_res.t() * inov_cov_inv * inov_res));
   }
 
