@@ -253,8 +253,9 @@ Sparse_DFM <- function(X, r, alphas = logspace(-2,3,100), alg = 'EM-sparse', err
       KFS <- kalmanCpp(X, a0_0, P0_0, A.tilde, Lambda.tilde, Sigma.eta, Sigma.u.tilde)
       #KFS <- kalman(X, a0_0, P0_0, A.tilde, Lambda.tilde, Sigma.eta, Sigma.u.tilde)
       
-      state.EM = as.matrix(KFS$factors.KS)
-      covariance.EM = KFS$covariance.KS
+    
+      state.EM = best.KFS$factors.KS[2:(n+1),]
+      covariance.EM = best.KFS$covariance.KS[,,2:(n+1)]
       
       
       ## Fill in missing data in X
