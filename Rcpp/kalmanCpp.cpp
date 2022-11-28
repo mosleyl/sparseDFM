@@ -55,8 +55,9 @@ List kalmanCpp(const mat& X, const vec& a0_0, const mat& P0_0, const mat& A,
     const mat y_t = y.col(t);
     const uvec na_omit_t = find_finite(y_t);
     Lambda_t = Lambda.rows(na_omit_t);
-    const mat Sig_e_t = Sig_e.submat(na_omit_t, na_omit_t);
-    const mat inv_Sig_e_t = inv(diagmat(Sig_e_t));
+    const mat Sig_e_t = diagmat(Sig_e.submat(na_omit_t, na_omit_t));
+    const mat inv_Sig_e_t = inv(Sig_e_t);
+    const vec diag_Sig_e_t = diagvec(Sig_e_t);
 
     // Prediction equations
     at_tlag.col(t) = A * at_t.col(t);
@@ -74,8 +75,13 @@ List kalmanCpp(const mat& X, const vec& a0_0, const mat& P0_0, const mat& A,
     Pt_t.slice(t + 1) = Pt_tlag.slice(t) - KG * Lambda_t * Pt_tlag.slice(t);
 
     // Calculate log-likelihood
-    logl -= 0.5 * (sum(log(abs(diagvec(Sig_e_t)))) + log(abs(det(GG)))
-        + as_scalar(inov_res.t() * inov_cov_inv * inov_res));
+    if (all(diag_Sig_e_t > 0)) {
+      const double detGG = det(GG);
+      if (detGG > 0) {
+        logl -= 0.5 * (sum(log(diag_Sig_e_t)) + log(detGG)
+            + as_scalar(inov_res.t() * inov_cov_inv * inov_res));
+      }
+    }
   }
 
   // Initialise Kalman smoother with t=n of filtered mean and covariance
