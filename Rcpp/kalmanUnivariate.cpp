@@ -66,8 +66,9 @@ List kalmanUnivariate(const mat& X, const vec& a0_0, const mat& P0_0,
 
   // Kalman filter loop for t = 1,...,n
   const vec diag_Sig_e = diagvec(Sig_e);
-  for (uword t = 0; t < n; ++t) {
+  const double log2pi = log(2.0 * datum::pi);
 
+  for (uword t = 0; t < n; ++t) {
     // Prediction equations
     at_i = A * at_i;
     Pt_i = A * Pt_i * A.t() + Sig_u;
@@ -96,7 +97,7 @@ List kalmanUnivariate(const mat& X, const vec& a0_0, const mat& P0_0,
       Pt_i = 0.5 * (Pt_i + Pt_i.t());
 
       // Calculate log-likelihood
-      logl -= 0.5 * (log(Ft_i) + vt_i * inv_Ft_i * vt_i);
+      logl -= 0.5 * (log2pi + log(Ft_i) + vt_i * inv_Ft_i * vt_i);
 
       vt(i, t) = vt_i;
       inv_Ft(i, t) = inv_Ft_i;
