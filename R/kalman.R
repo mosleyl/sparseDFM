@@ -85,8 +85,8 @@ kalman <- function(X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u) {
   
   ## output for kalman filter 
   
-  factors.KF = t(at_t[,2:n+1])
-  covariance.KF = Pt_t[,,2:n+1]
+  factors.KF = t(at_t[,2:(n+1)])
+  covariance.KF = Pt_t[,,2:(n+1)]
   
   ## initialise kalman smoother with t=n of filtered mean and covariance 
 
