@@ -10,7 +10,7 @@ inline mat symmat(const mat& P) {
 }
 
 // [[Rcpp::export]]
-List kalmanCpp(const mat& X, const vec& a0_0, const mat& P0_0, const mat& A,
+List kalmanCpp(const mat& X, const rowvec& a0_0, const mat& P0_0, const mat& A,
                const mat& Lambda, const mat& Sig_e, const mat& Sig_u) {
 
   //  Kalman Filter and Smoother equations from Shumway and Stoffer (1982)
@@ -56,12 +56,12 @@ List kalmanCpp(const mat& X, const vec& a0_0, const mat& P0_0, const mat& A,
   cube Pt_n(k, k, n + 1, fill::zeros);
   cube Pt_tlag_n(k, k, n, fill::zeros);
 
-  at_t.col(0) = a0_0;   // initial state mean at t=0
-  Pt_t.slice(0) = P0_0; // initial state covariance at t=0
+  at_t.col(0) = a0_0.t(); // initial state mean at t=0
+  Pt_t.slice(0) = P0_0;   // initial state covariance at t=0
 
-  const mat y = X.t();  // work with p x n matrix y
+  const mat y = X.t();    // work with p x n matrix y
 
-  double logl = 0;      // log-likelihood required for convergence check in EM
+  double logl = 0;        // log-likelihood required for convergence check in EM
 
   // Kalman filter loop for t = 1,...,n
   mat Lambda_t;
