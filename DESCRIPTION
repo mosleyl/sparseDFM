@@ -1,0 +1,31 @@
+Package: SparseDFM
+Title: SparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings
+Version: 0.0.0.9000
+Authors@R: 
+    c(person("Luke", "Mosley", , "l.mosley@lancaster.ac.uk", role = c("aut"),
+           comment = c(ORCID = "YOUR-ORCID-ID")),
+      person("Tak-Shing", "Chan", , "t.t.chan@lancaster.ac.uk", role = c("aut"),
+           comment = c(ORCID = "YOUR-ORCID-ID")),
+      person("Alex", "Gibberd", , "a.gibberd@lancaster.ac.uk", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+           )
+Description: Estimate Dynamic Factor Models (with optional sparse loadings) via Expectation Maximisation.
+License: use_gpl3_license()
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports: 
+    Matrix,
+    pracma,
+    Rcpp (>= 1.0.9),
+    corpcor
+LinkingTo: 
+    Rcpp, 
+    RcppArmadillo
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Depends: 
+    R (>= 2.10)
+LazyData: true

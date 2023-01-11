@@ -1,0 +1,95 @@
+---
+title: "simulation-example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{simulation-example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(SparseDFM)
+```
+
+```{r}
+## Simulation 
+
+# set below to FALSE for dense simulation
+sparse = TRUE
+
+library(tsDyn)
+
+n = 100 # obs
+k = 0 # targets not being regularised
+p = 30 # indicators being regularised
+r = 3 # factors 
+phi = 0.6 # var 
+pstar = p + k # total dimension
+
+if(sparse==TRUE){
+  loadings = kronecker(diag(r),rep(r,p/r))
+  # Sparse loadings with k=6 targets not being regularised 
+  #beta = matrix(rep(c(3,2,1, 1,2,3, 2,1,3),2), ncol = r, byrow = TRUE) 
+  #loadings = rbind(beta, loadings)
+}else{
+  loadings = MASS::mvrnorm(pstar, mu = rep(0,r), Sigma = diag(r))
+}
+
+# VAR(1) factors 
+factors = tsDyn::VAR.sim(phi*diag(r), n, include = 'none', varcov = diag(r))
+
+# IID errors 
+errors = MASS::mvrnorm(n, mu = rep(0,pstar), Sigma = diag(pstar))
+
+# AR(1) errors 
+# errors = tsDyn::VAR.sim(0.7*diag(pstar), n, include = 'none', varcov = diag(pstar))
+
+X = factors %*% t(loadings) + errors 
+
+```
+
+We can first try to gauge how many factors might be appropriate. Note, this is done independently of the sparsity for now, it is still an open problem to tune simultaneously the sparsity and number of factors.
+
+```{r}
+
+## Check number of factors using Bai and Ng 
+tuneFactors(X, plot = TRUE)
+
+```
+
+```{r}
+
+
+fit = SparseDFM(X, r = 3, q = 0, alg = '2Stage', err = 'IID', kalman = 'univariate', standardize = FALSE, max_iter = 100, threshold = 1e-4)
+
+## Fit DFM 
+st = Sys.time()
+fit = SparseDFM(X, r = 3, q = 0, alg = 'EM', err = 'IID', kalman = 'univariate', standardize = FALSE, max_iter = 100, threshold = 1e-4)
+et = Sys.time()
+et - st 
+
+plot.factor(fit)
+plot.loading.lineplot(fit, which.factor = 1)
+plot.residual(fit, type = 'boxplot')
+
+```
+
+```{r}
+## Fit Sparse DFM 
+st = Sys.time()
+fit = Sparse_DFM(X, r = 3, q = 0, alg = 'EM-sparse', err = 'IID', kalman = 'univariate', standardize = FALSE, max_iter = 100, threshold = 1e-4)
+et = Sys.time()
+et - st 
+
+plot.factor(fit)
+plot.loading.lineplot(fit, which.factor = 1)
+plot.residual(fit, type = 'boxplot')
+
+```

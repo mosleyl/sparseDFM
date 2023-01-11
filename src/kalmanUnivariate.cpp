@@ -2,12 +2,13 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 using namespace Rcpp;
-using namespace arma;
+// Got rid of arma namespace because messes with RcppExports (not carried through)
 
+//' @export
 // [[Rcpp::export]]
-List kalmanUnivariate(const mat& X, const vec& a0_0, const mat& P0_0,
-                      const mat& A, const mat& Lambda, const mat& Sig_e,
-                      const mat& Sig_u) {
+List kalmanUnivariate(const arma::mat& X, const arma::vec& a0_0, const arma::mat& P0_0,
+                      const arma::mat& A, const arma::mat& Lambda, const arma::mat& Sig_e,
+                      const arma::mat& Sig_u) {
 
   //  Univariate treatment of multivariate series
   //  Kalman filter and smoother equations from Durbin and Koopman (2012)
@@ -43,32 +44,32 @@ List kalmanUnivariate(const mat& X, const vec& a0_0, const mat& P0_0,
   //        the number of factors and p is the number of variables.
 
   // Initialise
-  const uword n = X.n_rows;
-  const uword p = X.n_cols;
-  const uword k = A.n_rows;
+  const arma::uword n = X.n_rows;
+  const arma::uword p = X.n_cols;
+  const arma::uword k = A.n_rows;
 
-  mat at_tlag(k, n, fill::none);        // predicted state mean
-  cube Pt_tlag(k, k, n, fill::none);    // predicted state covariance
-  mat at_t(k, n, fill::none);           // filtered state mean
-  cube Pt_t(k, k, n, fill::none);       // filtered state covariance
-  mat at_n(k, n, fill::none);           // smoothed state mean
-  cube Pt_n(k, k, n, fill::none);       // smoothed state covariance
-  cube Pt_tlag_n(k, k, n, fill::none);  // smoothed state covariance with lag
+  arma::mat at_tlag(k, n, arma::fill::none);        // predicted state mean
+  arma::cube Pt_tlag(k, k, n, arma::fill::none);    // predicted state covariance
+  arma::mat at_t(k, n, arma::fill::none);           // filtered state mean
+  arma::cube Pt_t(k, k, n, arma::fill::none);       // filtered state covariance
+  arma::mat at_n(k, n, arma::fill::none);           // smoothed state mean
+  arma::cube Pt_n(k, k, n, arma::fill::none);       // smoothed state covariance
+  arma::cube Pt_tlag_n(k, k, n, arma::fill::none);  // smoothed state covariance with lag
 
-  vec at_i = a0_0;                      // initial state mean
-  mat Pt_i = P0_0;                      // initial state covariance
+  arma::vec at_i = a0_0;                      // initial state mean
+  arma::mat Pt_i = P0_0;                      // initial state covariance
 
   double logl = 0.0;                    // log-likelihood
 
-  mat vt(p, n, fill::none);             // innovation
-  mat inv_Ft(p, n, fill::zeros);        // inverse innovation variance
-  cube Kt(k, p, n, fill::none);         // Kalman gain
+  arma::mat vt(p, n, arma::fill::none);             // innovation
+  arma::mat inv_Ft(p, n, arma::fill::zeros);        // inverse innovation variance
+  arma::cube Kt(k, p, n, arma::fill::none);         // Kalman gain
 
   // Kalman filter loop for t = 1,...,n
-  const vec diag_Sig_e = diagvec(Sig_e);
-  const double log2pi = log(2.0 * datum::pi);
+  const arma::vec diag_Sig_e = diagvec(Sig_e);
+  const double log2pi = log(2.0 * arma::datum::pi);
 
-  for (uword t = 0; t < n; ++t) {
+  for (arma::uword t = 0; t < n; ++t) {
     // Prediction equations
     at_i = A * at_i;
     Pt_i = A * Pt_i * A.t() + Sig_u;
@@ -76,20 +77,20 @@ List kalmanUnivariate(const mat& X, const vec& a0_0, const mat& P0_0,
     Pt_tlag.slice(t) = Pt_i;
 
     // Update equations
-    for (uword i = 0; i < p; ++i) {
+    for (arma::uword i = 0; i < p; ++i) {
       const double yt_i = X(t, i);      // y = t(X)
       if (std::isnan(yt_i)) continue;   // omit NA
 
-      const rowvec Zt_i = Lambda.row(i);
+      const arma::rowvec Zt_i = Lambda.row(i);
       const double vt_i = yt_i - dot(Zt_i, at_i);
-      const vec PZt_i = Pt_i * Zt_i.t();
+      const arma::vec PZt_i = Pt_i * Zt_i.t();
       const double Ft_i = dot(Zt_i, PZt_i) + diag_Sig_e(i);
 
       // Skip yt_i if Ft_i is zero
-      if (abs(Ft_i) <= datum::eps) continue;
+      if (abs(Ft_i) <= arma::datum::eps) continue;
 
       const double inv_Ft_i = 1.0 / Ft_i;
-      const vec Kt_i = PZt_i * inv_Ft_i;
+      const arma::vec Kt_i = PZt_i * inv_Ft_i;
       at_i += Kt_i * vt_i;
       Pt_i -= Kt_i * PZt_i.t();
 
@@ -108,20 +109,20 @@ List kalmanUnivariate(const mat& X, const vec& a0_0, const mat& P0_0,
   }
 
   // Initialise Kalman smoother with zeros
-  vec rt_i(k, fill::zeros);
-  mat Nt_i(k, k, fill::zeros);
+  arma::vec rt_i(k, arma::fill::zeros);
+  arma::mat Nt_i(k, k, arma::fill::zeros);
 
   // Kalman smoother loop for t = n,...,1
-  const mat Ik = eye(k, k);
-  for (uword t = n - 1; t != uword(-1); --t) {
-    for (uword i = p - 1; i != uword(-1); --i) {
-      const rowvec Zt_i = Lambda.row(i);
+  const arma::mat Ik = arma::eye(k, k);
+  for (arma::uword t = n - 1; t != arma::uword(-1); --t) {
+    for (arma::uword i = p - 1; i != arma::uword(-1); --i) {
+      const arma::vec Zt_i = Lambda.row(i);
       const double inv_Ft_i = inv_Ft(i, t);
-      const vec Kt_i = Kt.slice(t).col(i);
-      const mat Lt_i = Ik - Kt_i * Zt_i;
+      const arma::vec Kt_i = Kt.slice(t).col(i);
+      const arma::mat Lt_i = Ik - Kt_i * Zt_i;
       if (inv_Ft_i) {
         // yt_i is not missing and Ft_i is not zero
-        const vec ZFt_i = Zt_i.t() * inv_Ft_i;
+        const arma::vec ZFt_i = Zt_i.t() * inv_Ft_i;
         rt_i = ZFt_i * vt(i, t) + Lt_i.t() * rt_i;
         Nt_i = ZFt_i * Zt_i + Lt_i.t() * Nt_i * Lt_i;
       } else {
@@ -129,7 +130,7 @@ List kalmanUnivariate(const mat& X, const vec& a0_0, const mat& P0_0,
         Nt_i = Lt_i.t() * Nt_i * Lt_i;
       }
     }
-    const mat Pt_1 = Pt_tlag.slice(t);
+    const arma::mat Pt_1 = Pt_tlag.slice(t);
     at_n.col(t) = at_tlag.col(t) + Pt_1 * rt_i;
     Pt_n.slice(t) = Pt_1 - Pt_1 * Nt_i * Pt_1;
     if (t > 0) {
@@ -140,7 +141,7 @@ List kalmanUnivariate(const mat& X, const vec& a0_0, const mat& P0_0,
 
   // Calculate smoothed state covariance with lag
   Pt_tlag_n.slice(0) = Pt_n.slice(0) * solve(Pt_tlag.slice(0), A) * P0_0;
-  for (uword t = 1; t < n; ++t) {
+  for (arma::uword t = 1; t < n; ++t) {
     Pt_tlag_n.slice(t) = Pt_n.slice(t) * solve(Pt_tlag.slice(t), A) * Pt_t.slice(t - 1);
   }
 

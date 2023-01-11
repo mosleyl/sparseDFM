@@ -1,7 +1,7 @@
 # Transform data according to the legend
 
 
-transformdata <- function(data, stationary_transform)
+transformData <- function(data, stationary_transform)
 {
   v = as.matrix(data)
   vv <- matrix(NA, NROW(v), NCOL(v))

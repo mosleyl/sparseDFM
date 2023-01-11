@@ -1,0 +1,35 @@
+---
+title: "inflation-example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{inflation-example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(SparseDFM)
+head(inflation)
+X = as.matrix(inflation)
+```
+
+```{r}
+sol = SparseDFM(X, 3, q = 1,
+          alphas = logspace(-2,3,100),
+          alg = 'EM-sparse',
+          err = 'AR1',
+          kalman = 'univariate',
+          standardize = TRUE,
+          max_iter=100,
+          threshold=1e-4)
+
+```
+
+
