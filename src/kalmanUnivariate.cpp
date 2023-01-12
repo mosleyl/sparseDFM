@@ -5,7 +5,7 @@ using namespace Rcpp;
 using namespace arma;
 
 // [[Rcpp::export]]
-List kalmanUnivariate(const mat& X, const rowvec& a0_0, const mat& P0_0,
+List kalmanUnivariate(const mat& X, const mat& a0_0, const mat& P0_0,
                       const mat& A, const mat& Lambda, const mat& Sig_e,
                       const mat& Sig_u) {
 
@@ -21,7 +21,7 @@ List kalmanUnivariate(const mat& X, const rowvec& a0_0, const mat& P0_0,
   //  Inputs:
   //
   //  X: n x p, matrix of (stationary) time series
-  //  a0_0: 1 x k, initial state mean vector at t=0
+  //  a0_0: k x 1, initial state mean vector at t=0
   //  P0_0: k x k, initial state covariance matrix at t=0
   //  A: k x k, state matrix
   //  Lambda: p x k, measurement matrix
@@ -55,7 +55,7 @@ List kalmanUnivariate(const mat& X, const rowvec& a0_0, const mat& P0_0,
   cube Pt_n(k, k, n, fill::none);       // smoothed state covariance
   cube Pt_tlag_n(k, k, n, fill::none);  // smoothed state covariance with lag
 
-  vec at_i = a0_0.t();                  // initial state mean
+  vec at_i = vectorise(a0_0);           // initial state mean
   mat Pt_i = P0_0;                      // initial state covariance
 
   double logl = 0.0;                    // log-likelihood
