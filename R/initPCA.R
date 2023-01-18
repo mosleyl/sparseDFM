@@ -11,6 +11,8 @@ library(pracma)
 
 initPCA <- function(X,r,err='AR1') {
   
+  # edit 
+  
   # interpolate the missing data in X 
   fillNA = fill_NA(X)
   X.balanced<- fillNA$X
