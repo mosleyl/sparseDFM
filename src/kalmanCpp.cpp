@@ -17,6 +17,7 @@ inline arma::mat symmat(const arma::mat& P) {
 //' @param Lambda p x k, measurement matrix 
 //' @param Sig_e p x p, measurement equation residuals covariance matrix (diagonal)
 //' @param Sig_u k x k, state equation residuals covariance matrix
+//' @import Rcpp
 //' @export
 // [[Rcpp::export]]
 List kalmanCpp(const arma::mat& X, const arma::mat& a0_0, const arma::mat& P0_0, const arma::mat& A,

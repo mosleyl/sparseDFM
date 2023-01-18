@@ -3,6 +3,7 @@
 
 using namespace Rcpp;
 
+//' @import Rcpp
 // [[Rcpp::export]]
 arma::mat fastLambda(const arma::cube& D, const arma::mat& C) {
   // Validate inputs

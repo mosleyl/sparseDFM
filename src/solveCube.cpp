@@ -3,6 +3,7 @@
 
 using namespace Rcpp;
 
+//' @import Rcpp
 // [[Rcpp::export]]
 arma::cube solveCube(const arma::cube& A, const arma::mat& B, const double nu = 0.0) {
   // Validate inputs
