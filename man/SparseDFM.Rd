@@ -53,7 +53,47 @@ SparseDFM(
 \item{threshold}{Numeric. Tolerance on EM iterates. Default is 1e-4.}
 }
 \value{
-item to be returned
+A list-of-lists-like object of class 'SparseDFM' with the following elements:
+\item{\code{data}}{A list containing information about the data with the following elements:
+\tabular{llll}{
+\code{X} \tab\tab is the original \eqn{n \times p}{n x p} numeric data matrix of (stationary) time series. \cr\cr
+\code{standardize} \tab\tab is a logical value indicating whether the original data was standardized.\cr\cr
+\code{X.mean} \tab\tab is a p-dimensional numeric vector of column means of \eqn{X}.  \cr\cr
+\code{X.sd} \tab\tab is a p-dimensional numeric vector of column standard deviations of \eqn{X}.  \cr\cr
+\code{X.bal} \tab\tab is a \eqn{n \times p}{n x p} numeric data matrix of the original \eqn{X} with missing data interpolated using \code{fill_NA()}. \cr\cr
+\code{eigen} \tab\tab is the eigen decomposition of \code{X.bal}. \cr\cr
+\code{predict} \tab\tab is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. \cr\cr
+}
+}
+\item{\code{params}}{A list containing the estimated parameters of the model with the following elements:
+\tabular{llll}{
+\code{A} \tab\tab the \eqn{r \times r}{r x r} factor transition matrix. \cr\cr
+\code{Phi} \tab\tab the \eqn{p \times p}{p x p} diagonal matrix of AR(1) coefficients for the idiosyncratic errors. \cr\cr
+\code{Lambda} \tab\tab the \eqn{p \times r}{p x r} loadings matrix. \cr\cr
+\code{Sigma_u} \tab\tab the \eqn{r \times r}{r x r} factor transition error covariance matrix. \cr\cr
+\code{Sigma_epsilon} \tab\tab the \eqn{n \times n}{n x n} idiosyncratic error covariance matrix. \cr\cr
+}
+}
+\item{\code{state}}{A list containing the estimated states and state covariances with the following elements:
+\tabular{llll}{
+\code{factors} \tab\tab the \eqn{n \times r}{n x r} matrix of factor estimates. \cr\cr
+\code{errors} \tab\tab the \eqn{n \times p}{n x p} matrix of AR(1) idiosyncratic error estimates. For err = AR1 only. \cr\cr
+\code{factors.cov} \tab\tab the \eqn{r \times r \times n}{r x r x n} covariance matrices of the factor estimates. \cr\cr
+\code{errors.cov} \tab\tab the \eqn{p \times p \times n}{p x p x n} covariance matrices of the AR(1) idiosyncratic error estimates. For err = AR1 only. \cr\cr
+}
+}
+\item{\code{em}}{A list containing information about the EM algorithm with the following elements:
+\tabular{llll}{
+\code{converged} \tab\tab a logical value indicating whether the EM algorithm converged. \cr\cr
+\code{alpha_grid} \tab\tab a numerical vector containing the LASSO tuning parameters considered in BIC evaluation before stopping. \cr\cr
+\code{alpha_opt} \tab\tab the optimal LASSO tuning parameter used. \cr\cr
+\code{bic} \tab\tab a numerical vector containing BIC values for the corresponding LASSO tuning parameter in \code{alpha_grid}. \cr\cr
+\code{loglik} \tab\tab the log-likelihood of the innovations from the Kalman filter in the final model. \cr\cr
+\code{num_iter} \tab\tab number of iterations taken by the EM algorithm. \cr\cr
+\code{tol} \tab\tab tolerance for EM convergence. Matches \code{threshold} in the input. \cr\cr
+\code{max_iter} \tab\tab maximum number of iterations allowed for the EM algorithm. Matches \code{max_iter} in the input. \cr\cr
+}
+}
 }
 \description{
 Main function to allow estimation of a standard DFM or a sparse DFM (with sparse loadings) with:
