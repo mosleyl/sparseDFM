@@ -2,7 +2,6 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 using namespace Rcpp;
-// Got rid of arma namespace because messes with RcppExports (not carried through)
 
 //' Univariate filtering (sequential processing) for fast KFS
 //'

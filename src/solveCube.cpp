@@ -2,7 +2,6 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 using namespace Rcpp;
-// Got rid of arma namespace because messes with RcppExports (not carried through)
 
 // [[Rcpp::export]]
 arma::cube solveCube(const arma::cube& A, const arma::mat& B, const double nu = 0.0) {

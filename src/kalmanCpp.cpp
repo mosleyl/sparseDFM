@@ -2,7 +2,6 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 using namespace Rcpp;
-// Got rid of arma namespace because messes with RcppExports (not carried through)
 
 // Symmetrise the matrix
 inline arma::mat symmat(const arma::mat& P) {

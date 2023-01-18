@@ -2,7 +2,6 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 using namespace Rcpp;
-// Got rid of arma namespace because messes with RcppExports (not carried through)
 
 // [[Rcpp::export]]
 arma::mat fastLambda(const arma::cube& D, const arma::mat& C) {
