@@ -1,11 +1,16 @@
+#' BIC calculation for LASSO tuning 
+#'
+#' @param X: n x p data matrix 
+#' @param factors: n x r factor estimates 
+#' @param loadings: p x r loading estimates 
+#' 
+#' @importFrom stats na.omit
+#' 
+#' @noRd
+
+
 
 bic_function <- function(X, factors, loadings){
-  
-  ## Input:
-  ##
-  ##  X: n x p data matrix 
-  ##  factors: n x r factor estimates 
-  ##  loadings: p x r loading estimates 
   
   n = dim(X)[1]
   p = dim(X)[2]

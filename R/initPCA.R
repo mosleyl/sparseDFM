@@ -1,17 +1,16 @@
-## Function to get initial parameter estimates for the EM algorithm.
-##
-## Inputs:
-#
-# X: n x p matrix of (stationary) time series 
-# r: number of factors 
-# err: idiosyncratic error structure, 'AR1' or 'IID'. Default is 'AR1'.
+#' Estimate initial parameters for the EM algorithm
+#'
+#' @param X: n x p matrix of (stationary) time series.
+#' @param r: number of factors.
+#' @param err: idiosyncratic error structure, 'AR1' or 'IID'. Default is 'IID'.
+#' 
+#' @importFrom stats cov na.omit var
+#' @importFrom Matrix nearPD
+#' 
+#' @noRd
 
 
-library(pracma)
-
-initPCA <- function(X,r,err='AR1') {
-  
-  # edit 
+initPCA <- function(X,r,err='IID') {
   
   # interpolate the missing data in X 
   fillNA = fill_NA(X)
@@ -79,9 +78,18 @@ initPCA <- function(X,r,err='AR1') {
     # P0_0 is (r+p)x(r+p) variance of state at t=0 
      
       a0_0 = as.matrix(rep(0, r+p))
-      P_F = matrix(corpcor::pseudoinverse(diag(r*r)- kronecker(A,A)) %*% matrix(Sigma_u, ncol = 1), r, r)
+      P_F = matrix(solve(diag(r*r)- kronecker(A,A)) %*% matrix(Sigma_u, ncol = 1), r, r)
+      
+      if(any(eigen(P_F)$values <= 0)){
+        warning('Initial covariance matrix of factors has negative eigenvalues. The nearest positive definite matrix to an approximate one is used instead.')
+        P_F = Matrix::nearPD(P_F, doSym = TRUE)$mat
+        P_F = as.matrix(P_F)
+      }
+      
       P_eps = diag(1 / diag(diag(dim(Phi)[1]) - Phi ^ 2)) * Sigma_epsilon
       P0_0 = blkdiag(P_F, P_eps) # covariance of F and e initialised to be 0 
+      
+      
   }else { # IID errors
     
     ## Measurement equation parameters: Lambda and Sig_e
@@ -111,8 +119,15 @@ initPCA <- function(X,r,err='AR1') {
     # P0_0 is rxr variance of state at t=0 
       
       a0_0 = as.matrix(rep(0, r))
-      P0_0 = matrix(corpcor::pseudoinverse(diag(r*r)- kronecker(A.tilde,A.tilde)) %*% matrix(Sigma.u.tilde, ncol = 1), r, r)
+      P0_0 = matrix(solve(diag(r*r)- kronecker(A.tilde,A.tilde)) %*% matrix(Sigma.u.tilde, ncol = 1), r, r)
     
+      if(any(eigen(P0_0)$values <= 0)){
+        warning('Initial covariance matrix of factors has negative eigenvalues. The nearest positive definite matrix to an approximate one is used instead.')
+        P0_0 = Matrix::nearPD(P0_0, doSym = TRUE)$mat
+        P0_0 = as.matrix(P0_0)
+      }
+      
+      
   }
     
 

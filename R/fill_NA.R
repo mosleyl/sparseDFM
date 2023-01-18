@@ -1,12 +1,14 @@
-## data set with missing values replaced with cubic spline (between observed values) and 
-## 1-D digital filter fitted values for missing tails calculated at the variable level.
-## This is partly taken from nowcasting R package 
-
-## Interpolation of missing data for initPCA
-##
-## Internal missing data is filled in using a cubic spline. 
-## Start and end of sample missing data is filled in using the median of the series and then
-## smoothed with a MA(3) process. 
+#' Interpolation of missing data for initPCA
+#'
+#' Internal missing data is filled in using a cubic spline. 
+#' Start and end of sample missing data is filled in using the median of the series and then
+#' smoothed with a MA(3) process. 
+#' 
+#' @param X n x p numeric matrix of (stationary) time series 
+#' 
+#' @importFrom stats spline filter median 
+#' 
+#' @noRd
 
 
 fill_NA <-function(X){

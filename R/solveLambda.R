@@ -1,29 +1,31 @@
-solveLambda <- function(D_cube, C_n, nu = 1, alpha, maxiter = 100, eps = 1e-4){
+#' New solver for Lambda M-step in Sparsified EM algorithm that handles missing data 
+#'  
+#' @param D_cube r x r x p 
+#' @param C_n p x r 
+#' @param nu scaling term for the augmentation in ADMM 
+#' @param alpha LASSO regularisation parameter 
+#' @noRd
+
+## Outputs
+##
+##  Lambda: primal variable 
+##  Z: auxiliary variable (should be sparse)
+##  U: dual variable 
+##  opt: difference in estimates along optimization path 
+##  iter: number of iterations till convergence/end
+
+
+
+solveLambda <- function(D_cube, C_n, nu = 1, alpha){
   
-  ## New solver for Lambda M-step in Sparsified EM algorithm that handles missing data 
+  maxiter = 100
+  eps = 1e-4
   
-  ## Inputs:
-  ##  
-  ##  D_cube: r x r x N - solve(\sum_{t=1}^n [E(F_t F_t^T | \Omega_n) \otimes (W_t \bsig_e^{-1} W_t) + \nu*I])
-  ##  C_n: N x r - \sum_{t=1}^n [W_t \bsig_e^{-1} W_t X_t E(F_t | \Omega_n)]
-  ##  nu: scaling term for the augmentation in ADMM 
-  ##  alpha: LASSO regularisation parameter 
-  ##  maxiter: maximum number of iterations
-  ##  eps: convergence threshold 
-  
-  ## Outputs:
-  ##
-  ##  Lambda: primal variable 
-  ##  Z: auxiliary variable (should be sparse)
-  ##  U: dual variable 
-  ##  opt: difference in estimates along optimization path 
-  ##  iter: number of iterations till convergence/end
-  
-  N = dim(C_n)[1]
+  p = dim(C_n)[1]
   r = dim(C_n)[2]
   
   # initialise at 0 
-  Lambda = matrix(data = 0, nrow=N, ncol=r)
+  Lambda = matrix(data = 0, nrow=p, ncol=r)
   Z = Lambda
   U = Lambda
   
@@ -42,7 +44,6 @@ solveLambda <- function(D_cube, C_n, nu = 1, alpha, maxiter = 100, eps = 1e-4){
     Lambda = fastLambda(D_cube, CC_n)
     
     # Shrinkage Operator - nu = 1
-    #Z = softThresh(Lambda+U,alpha)
     Z = softThreshMatrix(Lambda+U,alpha)
     
     # Dual variable 

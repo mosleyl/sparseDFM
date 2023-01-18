@@ -1,3 +1,10 @@
+#' Fit a VAR(p) model 
+#' 
+#' @param x numeric data matrix 
+#' @param p number of lags 
+#' @noRd
+
+
 VAR <- function(x, p) {
   n <- nrow(x)
   Y <- x[(p + 1):n, ]

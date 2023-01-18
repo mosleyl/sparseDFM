@@ -1,50 +1,28 @@
-##  Sparsified EM algorithm for IID or AR(1) idio errors (adapted from Banbura and Modugno (2014))
-##
-##  E-step: Kalman filter and smoother using parameters estimated in M-step to obtain
-##          state mean, covariance and lagged-covariance. Log-likelihood calculated here.  
-##
-##  M-step: Maximisation of expected log-likelihood equations using E-step output. 
-##          With LASSO regularisation applied to the loadings matrix. 
-##
-##  Convergence: Uses the log-likelihood convergence rule from from Doz (2012)
-
-##  Input:
-##  
-##  X: n x p, matrix of (stationary) time series 
-##  a0_0: k x 1, initial state mean vector 
-##  P0_0: k x k, initial state covariance matrix
-##  A.tilde: k x k, initial state transition matrix
-##  Lambda.tilde: p x k, initial measurement matrix 
-##  Sigma.eta: p x p, initial measurement equation residuals covariance matrix (diagonal)
-##  Sigma.u.tilde: k x k, initial state equation residuals covariance matrix
-##  alpha.lasso: lasso tuning parameter value (>= 0). Default set to 0.1. 
-##  err: idiosyncratic error structure, 'AR1' or 'IID'. Default is 'AR1'.
-##  kalman: KFS equations, 'multivariate' or 'univariate'. Default is 'univariate'. 
-##  sparse: if TRUE, lasso regularisation applied to the loadings. Default is TRUE. 
-##  max_iter: maximum number of iterations for the EM algorithm. Default is 500.
-##  threshold: threshold for log-likelihood convergence check. Default is 1e-4. 
-##
-##  NOTE: For the DFM with AR(1) errors we have that k = r + p where r is 
-##        the number of factors and p is the number of variables.
-##        Otherwise, k = r. 
-##
-##  Output:
-##
-##  a0_0: k x 1, optimal initial state mean vector 
-##  P0_0: k x k, optimal initial state covariance matrix
-##  A.tilde: k x k, optimal state transition matrix
-##  Lambda.tilde: p x k, optimal measurement matrix 
-##  Sigma.eta: p x p, optimal measurement equation residuals covariance matrix (diagonal)
-##  Sigma.u.tilde: k x k, optimal state equation residuals covariance matrix
-##  converged : TRUE or FALSE, did the EM algorithm converge?
-##  num_iter : how many iterations did the EM algorithm take to converge?
-##  loglik.store: 1 x num_iter, log-likelihood for each EM iteration
+#' Sparsified EM algorithm 
+#'
+#' E-step: Kalman filter and smoother using parameters estimated in M-step to obtain
+#'        state mean, covariance and lagged-covariance. Log-likelihood calculated here.  
+#' M-step: Maximisation of expected log-likelihood equations using E-step output. 
+#'          With LASSO regularisation applied to the loadings matrix. 
+#' Convergence: Uses the log-likelihood convergence rule from from Doz (2012)
+#'
+#' @param X n x p, (stationary) time series.
+#' @param a0_0 k x 1, initial state mean vector 
+#' @param P0_0 k x k, initial state covariance matrix
+#' @param A.tilde k x k, initial state transition matrix
+#' @param Lambda.tilde p x k, initial measurement matrix 
+#' @param Sigma.eta p x p, initial measurement equation residuals covariance matrix (diagonal)
+#' @param Sigma.u.tilde k x k, initial state equation residuals covariance matrix
+#' @param alpha.lasso lasso tuning parameter value (>= 0). Default set to 0.1. 
+#' @param err idiosyncratic error structure, 'AR1' or 'IID'. Default is 'IID'.
+#' @param kalman KFS equations, 'multivariate' or 'univariate'. Default is 'univariate'. 
+#' @param sparse if TRUE, lasso regularisation applied to the loadings. Default is TRUE. 
+#' @param max_iter maximum number of iterations for the EM algorithm. Default is 500.
+#' @param threshold threshold for log-likelihood convergence check. Default is 1e-4. 
+#' @noRd
 
 
-library(pracma)
-
-
-EM <- function(X, a0_0, P0_0, A.tilde, Lambda.tilde, Sigma.eta, Sigma.u.tilde, alpha.lasso = 0.1, err = 'AR1', kalman = 'univariate', sparse = TRUE, max_iter=100, threshold=1e-4) {
+EM <- function(X, a0_0, P0_0, A.tilde, Lambda.tilde, Sigma.eta, Sigma.u.tilde, alpha.lasso = 0.1, err = 'IID', kalman = 'univariate', sparse = TRUE, max_iter=100, threshold=1e-4) {
 
   
   if(err == 'AR1'){
@@ -240,6 +218,7 @@ EM <- function(X, a0_0, P0_0, A.tilde, Lambda.tilde, Sigma.eta, Sigma.u.tilde, a
         KFS <- kalmanCpp(X, a0_0, P0_0, A.tilde, Lambda.tilde, Sigma.eta, Sigma.u.tilde)
       }
       
+      
       at_n = KFS$at_n             # state mean: k x n matrix (t=1,...,n)
       Pt_n = KFS$Pt_n             # state covariance: k x k x n array (t=1,...,n) 
       Pt_tlag_n = KFS$Pt_tlag_n   # state covariance with lag: k x k x n array (t=1,...,n)
@@ -248,7 +227,7 @@ EM <- function(X, a0_0, P0_0, A.tilde, Lambda.tilde, Sigma.eta, Sigma.u.tilde, a
       
       
       num_iter = num_iter + 1     # new iteration
-      
+
       ## M-step 
       
       ## Initial state mean and covariance update
