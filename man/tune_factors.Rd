@@ -2,7 +2,7 @@
 % Please edit documentation in R/tune_factors.R
 \name{tune_factors}
 \alias{tune_factors}
-\title{Tune the number of factors to use}
+\title{Tune for the number of factors to use}
 \usage{
 tune_factors(
   X,
@@ -13,7 +13,7 @@ tune_factors(
 )
 }
 \arguments{
-\item{X}{A \code{n x p} numeric data matrix or data frame of (stationary) time series.}
+\item{X}{\code{n x p} numeric data matrix or data frame of (stationary) time series.}
 
 \item{type}{Character. Option for which information criteria to use. Default is 2.}
 
@@ -23,6 +23,23 @@ tune_factors(
 
 \item{plot}{Logical. Make a plot showing the IC value for each of the number of factors considered. Default is \code{FALSE}.}
 }
+\value{
+The number of factors to use according to Bai and Ng (2002) information criteria.
+}
 \description{
-Uses Bai and Ng (2002) informaion criteria approach. Missing data is interpolated using fill_NA() function.
+Uses Bai and Ng (2002) information criteria approach. Missing data is interpolated using the \code{fill_NA} function.
+}
+\details{
+To calculate the number of factors to use in the model the information criteria approach of Bai and Ng (2002) is used. This can be done before \code{SparseDFM} is fitted to the data to determine \code{r}. Bai and Ng (2002) consider 3 types of information criteria with different penalties of the form:
+
+\deqn{IC_1(r) = log\left(V_r(\hat{\bm{F}},\hat{\bm{\Lambda}})\right) + r \left( \frac{n+p}{np}\right)log\left( \frac{np}{n+p}\right)}{IC_1(r) = log(V_r(\hat{\bm{F}},\hat{\Lambda})) + r ((n+p)/(np))log((np)/(n+p))}
+\deqn{IC_2(r) = log\left(V_r(\hat{\bm{F}},\hat{\bm{\Lambda}})\right) + r \left( \frac{n+p}{np} \right)log\left( min\{n,p\}\right)}{IC_2(r) = log(V_r(\hat{F},\hat{\Lambda})) + r ((n+p)/(np))log(min(n,p))}
+\deqn{IC_3(r) = log\left(V_r(\hat{\bm{F}},\hat{\bm{\Lambda}})\right) + r \frac{log\left( min\{n,p\}\right)}{min\{n,p\}}}{IC_3(r) = log(V_r(\hat{F},\hat{\Lambda})) + r log (min(n,p)))/(min(n,p))}
+
+The sum of squared residuals for \eqn{r}{r} factors \eqn{V_r(\hat{\bm{F}},\hat{\bm{\Lambda}}) = \sum_{i=1}^p\sum_{t=1}^n E[\hat{\epsilon}_{i,t}^2]/np}{V_r(\hat{F},\hat{\Lambda}) = \sum_{i=1}^p\sum_{t=1}^n E[\hat{\epsilon}_{i,t}^2]/np} with \eqn{\hat{\epsilon}_{i,t} = X_{t,i}-\hat{\bm{F}}_t\hat{\bm{\Lambda}}_i}{\hat{\epsilon}_{i,t} = X_{t,i}-\hat{F}_t\hat{\Lambda}_i} is found using PCA on the standardized data set \eqn{\bm{X}}{X}. The estimated factors \eqn{\hat{\bm{F}}}{\hat{F}} corresponding to the principle components and the estimated loadings \eqn{\hat{\bm{\Lambda}}}{\hat{\Lambda}} corresponding to the eigenvectors. Should the data contain missing values, then the missing data is interpolated using \code{fill_NA}.
+
+The number of factors to use will correspond to \eqn{\argmin_r IC_i(r)}{argmin(r) IC(i)(r)} for \eqn{i=1,2}{i=1,2} or \eqn{3}{3}. Type 2 is the highest when working in finite samples and therefore is set to default.
+}
+\references{
+Bai, J., & Ng, S. (2002). Determining the number of factors in approximate factor models. \emph{Econometrica, 70}(1), 191-221.
 }
