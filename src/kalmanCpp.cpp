@@ -8,7 +8,10 @@ inline arma::mat symmat(const arma::mat& P) {
   return 0.5 * (P + P.t());
 }
 
-//' Standard Multivariate KFS Equations
+//' Classic Multivariate KFS Equations
+//'
+//' @description 
+//' Implementation of the classic multivariate Kalman filter and smoother equations of Shumway and Stoffer (1982).
 //'
 //' @param X n x p, numeric matrix of (stationary) time series 
 //' @param a0_0 k x 1, initial state mean vector 
@@ -17,42 +20,27 @@ inline arma::mat symmat(const arma::mat& P) {
 //' @param Lambda p x k, measurement matrix 
 //' @param Sig_e p x p, measurement equation residuals covariance matrix (diagonal)
 //' @param Sig_u k x k, state equation residuals covariance matrix
+//'
+//' @details 
+//' For full details of the classic multivariate KFS approach, please refer to Mosley et al. (2023). Note that \eqn{n}{n} is the number of observations, \eqn{p}{p} is the number of time series, and \eqn{k}{k} is the number of states.
+//'
+//' @return logl log-likelihood of the innovations from the Kalman filter 
+//' @return at_t \eqn{k \times n}{k x n}, filtered state mean vectors
+//' @return Pt_t \eqn{k \times k \times n}{k x k x n}, filtered state covariance matrices
+//' @return at_n \eqn{k \times n}{k x n}, smoothed state mean vectors
+//' @return Pt_n \eqn{k \times k \times n}{k x k x n}, smoothed state covariance matrices
+//' @return Pt_tlag_n \eqn{k \times k \times n}{k x k x n}, smoothed state covariance with lag
+//'
+//' @references 
+//' Mosley, L., Chan, TS., & Gibberd, A. (2023). SparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings.
+//' 
+//' Shumway, R. H., & Stoffer, D. S. (1982). An approach to time series smoothing and forecasting using the EM algorithm. \emph{Journal of time series analysis, 3}(4), 253-264.
+//'
 //' @import Rcpp
 //' @export
 // [[Rcpp::export]]
 List kalmanCpp(const arma::mat& X, const arma::mat& a0_0, const arma::mat& P0_0, const arma::mat& A,
                const arma::mat& Lambda, const arma::mat& Sig_e, const arma::mat& Sig_u) {
-
-  //  Kalman Filter and Smoother equations from Shumway and Stoffer (1982)
-
-  //  Works for a general state space model of the form:
-  //
-  //  X_t = Lambda*F_t + e_t,  e_t ~ N(0,Sig_e)
-  //  F_t = A*F_{t-1} + u_t,   u_t ~ N(0,Sig_u)
-
-  //  Inputs:
-  //
-  //  X: n x p, matrix of (stationary) time series
-  //  a0_0: k x 1, initial state mean vector
-  //  P0_0: k x k, initial state covariance matrix
-  //  A: k x k, state matrix
-  //  Lambda: p x k, measurement matrix
-  //  Sig_e: p x p, measurement equation residuals covariance matrix (diagonal)
-  //  Sig_u: k x k, state equation residuals covariance matrix
-  //
-  //  Outputs:
-  //
-  //  logl: log-likelihood required for convergence check in EM
-  //  at_tlag: k x n, predicted state mean vectors
-  //  Pt_tlag: k x k x n, predicted state covariance matrices
-  //  at_t: k x n, filtered state mean vectors
-  //  Pt_t: k x k x n, filtered state covariance matrices
-  //  at_n: k x n, smoothed state mean vectors
-  //  Pt_n: k x k x n, smoothed state covariance matrices
-  //  Pt_tlag_n: k x k x n, smoothed state covariance with lag
-  //
-  //  NOTE: For the DFM with AR(1) errors we have that k = r + p where r is
-  //        the number of factors and p is the number of variables.
 
   // Initialise
   const arma::uword n = X.n_rows;

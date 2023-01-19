@@ -30,7 +30,7 @@ The number of factors to use according to Bai and Ng (2002) information criteria
 Uses Bai and Ng (2002) information criteria approach. Missing data is interpolated using the \code{fill_NA} function.
 }
 \details{
-To calculate the number of factors to use in the model the information criteria approach of Bai and Ng (2002) is used. This can be done before \code{SparseDFM} is fitted to the data to determine \code{r}. Bai and Ng (2002) consider 3 types of information criteria with different penalties of the form:
+To calculate the number of factors to use in the model, the information criteria approach of Bai and Ng (2002) is used. This can be done before \code{SparseDFM} is fitted to the data to determine \code{r}. Bai and Ng (2002) consider 3 types of information criteria with different penalties of the form:
 
 \deqn{IC_1(r) = log\left(V_r(\hat{\bm{F}},\hat{\bm{\Lambda}})\right) + r \left( \frac{n+p}{np}\right)log\left( \frac{np}{n+p}\right)}{IC_1(r) = log(V_r(\hat{\bm{F}},\hat{\Lambda})) + r ((n+p)/(np))log((np)/(n+p))}
 \deqn{IC_2(r) = log\left(V_r(\hat{\bm{F}},\hat{\bm{\Lambda}})\right) + r \left( \frac{n+p}{np} \right)log\left( min\{n,p\}\right)}{IC_2(r) = log(V_r(\hat{F},\hat{\Lambda})) + r ((n+p)/(np))log(min(n,p))}

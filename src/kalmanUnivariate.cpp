@@ -5,6 +5,9 @@ using namespace Rcpp;
 
 //' Univariate filtering (sequential processing) for fast KFS
 //'
+//' @description
+//' Univariate treatment (sequential processing) of the multivariate Kalman filter and smoother equations for fast implementation. Refer to Koopman and Durbin (2000).
+//'
 //' @param X n x p, numeric matrix of (stationary) time series 
 //' @param a0_0 k x 1, initial state mean vector 
 //' @param P0_0 k x k, initial state covariance matrix
@@ -12,45 +15,29 @@ using namespace Rcpp;
 //' @param Lambda p x k, measurement matrix 
 //' @param Sig_e p x p, measurement equation residuals covariance matrix (diagonal)
 //' @param Sig_u k x k, state equation residuals covariance matrix
+//' 
+//' @details 
+//' For full details of the univariate filtering approach, please refer to Mosley et al. (2023). Note that \eqn{n}{n} is the number of observations, \eqn{p}{p} is the number of time series, and \eqn{k}{k} is the number of states.
+//'
+//' @return logl log-likelihood of the innovations from the Kalman filter 
+//' @return at_t \eqn{k \times n}{k x n}, filtered state mean vectors
+//' @return Pt_t \eqn{k \times k \times n}{k x k x n}, filtered state covariance matrices
+//' @return at_n \eqn{k \times n}{k x n}, smoothed state mean vectors
+//' @return Pt_n \eqn{k \times k \times n}{k x k x n}, smoothed state covariance matrices
+//' @return Pt_tlag_n \eqn{k \times k \times n}{k x k x n}, smoothed state covariance with lag
+//'
 //' @import Rcpp
+//'
+//' @references 
+//' Koopman, S. J., & Durbin, J. (2000). Fast filtering and smoothing for multivariate state space models. \emph{Journal of Time Series Analysis, 21}(3), 281-296.
+//'
+//' Mosley, L., Chan, TS., & Gibberd, A. (2023). SparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings.
+//'
 //' @export
 // [[Rcpp::export]]
 List kalmanUnivariate(const arma::mat& X, const arma::mat& a0_0, const arma::mat& P0_0,
                       const arma::mat& A, const arma::mat& Lambda, const arma::mat& Sig_e,
                       const arma::mat& Sig_u) {
-
-  //  Univariate treatment of multivariate series
-  //  Kalman filter and smoother equations from Durbin and Koopman (2012)
-  //  Smoothed state covariance with lag from de Jong and Mackinnon (1988)
-
-  //  Works for a general state space model of the form:
-  //
-  //  X_t = Lambda*F_t + e_t,  e_t ~ N(0,Sig_e)
-  //  F_t = A*F_{t-1} + u_t,   u_t ~ N(0,Sig_u)
-
-  //  Inputs:
-  //
-  //  X: n x p, matrix of (stationary) time series
-  //  a0_0: k x 1, initial state mean vector at t=0
-  //  P0_0: k x k, initial state covariance matrix at t=0
-  //  A: k x k, state matrix
-  //  Lambda: p x k, measurement matrix
-  //  Sig_e: p x p, measurement equation residuals covariance matrix (diagonal)
-  //  Sig_u: k x k, state equation residuals covariance matrix
-  //
-  //  Outputs:
-  //
-  //  logl: log-likelihood required for convergence check in EM
-  //  at_tlag: k x n, predicted state mean vectors
-  //  Pt_tlag: k x k x n, predicted state covariance matrices
-  //  at_t: k x n, filtered state mean vectors
-  //  Pt_t: k x k x n, filtered state covariance matrices
-  //  at_n: k x n, smoothed state mean vectors
-  //  Pt_n: k x k x n, smoothed state covariance matrices
-  //  Pt_tlag_n: k x k x n, smoothed state covariance with lag
-  //
-  //  NOTE: For the DFM with AR(1) errors we have that k = r + p where r is
-  //        the number of factors and p is the number of variables.
 
   // Initialise
   const arma::uword n = X.n_rows;

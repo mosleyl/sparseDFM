@@ -1,14 +1,17 @@
-#' Interpolation of missing data for initPCA
+#' Interpolation of missing data 
 #'
 #' Internal missing data is filled in using a cubic spline. 
 #' Start and end of sample missing data is filled in using the median of the series and then
-#' smoothed with a MA(3) process. 
+#' smoothed with an MA(3) process. 
 #' 
-#' @param X n x p numeric matrix of (stationary) time series 
+#' @param X n x p numeric matrix of stationary and standardized time series 
+#' 
+#' @return X \eqn{n \times p}{n x p} numeric matrix with missing data interpolated 
+#' @return idx.na \eqn{n \times p}{n x p} logical matrix with \code{TRUE} if missing and \code{FALSE} otherwise. 
 #' 
 #' @importFrom stats spline filter median 
 #' 
-#' @noRd
+#' @export
 
 
 fill_NA <-function(X){

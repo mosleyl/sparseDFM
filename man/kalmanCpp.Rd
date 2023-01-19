@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{kalmanCpp}
 \alias{kalmanCpp}
-\title{Standard Multivariate KFS Equations}
+\title{Classic Multivariate KFS Equations}
 \usage{
 kalmanCpp(X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u)
 }
@@ -21,6 +21,27 @@ kalmanCpp(X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u)
 
 \item{Sig_u}{k x k, state equation residuals covariance matrix}
 }
+\value{
+logl log-likelihood of the innovations from the Kalman filter
+
+at_t \eqn{k \times n}{k x n}, filtered state mean vectors
+
+Pt_t \eqn{k \times k \times n}{k x k x n}, filtered state covariance matrices
+
+at_n \eqn{k \times n}{k x n}, smoothed state mean vectors
+
+Pt_n \eqn{k \times k \times n}{k x k x n}, smoothed state covariance matrices
+
+Pt_tlag_n \eqn{k \times k \times n}{k x k x n}, smoothed state covariance with lag
+}
 \description{
-Standard Multivariate KFS Equations
+Implementation of the classic multivariate Kalman filter and smoother equations of Shumway and Stoffer (1982).
+}
+\details{
+For full details of the classic multivariate KFS approach, please refer to Mosley et al. (2023). Note that \eqn{n}{n} is the number of observations, \eqn{p}{p} is the number of time series, and \eqn{k}{k} is the number of states.
+}
+\references{
+Mosley, L., Chan, TS., & Gibberd, A. (2023). SparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings.
+
+Shumway, R. H., & Stoffer, D. S. (1982). An approach to time series smoothing and forecasting using the EM algorithm. \emph{Journal of time series analysis, 3}(4), 253-264.
 }
