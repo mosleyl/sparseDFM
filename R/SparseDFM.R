@@ -45,7 +45,10 @@
 #'      \code{X.sd} \tab\tab is a p-dimensional numeric vector of column standard deviations of \eqn{X}.  \cr\cr
 #'      \code{X.bal} \tab\tab is a \eqn{n \times p}{n x p} numeric data matrix of the original \eqn{X} with missing data interpolated using \code{fill_NA()}. \cr\cr
 #'      \code{eigen} \tab\tab is the eigen decomposition of \code{X.bal}. \cr\cr 
-#'      \code{predict} \tab\tab is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. \cr\cr
+#'      \code{predict} \tab\tab is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. This has been unscaled back to original data scale if \code{standardize} is \code{TRUE}. \cr\cr
+#'      \code{method} \tab\tab the estimation algorithm used (\code{alg}). \cr\cr
+#'      \code{err} \tab\tab the type of idiosyncratic errors assumed. Either \code{IID} or \code{AR1}. \cr\cr
+#'      \code{call} \tab\tab call object obtained from \code{match.call()}. \cr\cr
 #'      }
 #'  }
 #'  \item{\code{params}}{A list containing the estimated parameters of the model with the following elements:
@@ -181,7 +184,10 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   X.sd = X.sd,
                                   X.bal = initialise$X.bal,
                                   eigen = initialise$eigen,
-                                  predict = fore_X),
+                                  predict = fore_X,
+                                  method = alg,
+                                  err = err,
+                                  call = match.call()),
                       params = list(A = A.tilde[1:r,1:r],
                                     Phi = A.tilde[(r+1):k,(r+1):k],
                                     Lambda = Lambda.tilde[,1:r],
@@ -192,7 +198,6 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                    factors.cov = P0_0[1:r,1:r],
                                    errors.cov = P0_0[(r+1):k,(r+1):k]))
         
-        return(output)
         
       }else {
         
@@ -202,7 +207,10 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   X.sd = X.sd,
                                   X.bal = initialise$X.bal,
                                   eigen = initialise$eigen,
-                                  predict = fore_X),
+                                  predict = fore_X,
+                                  method = alg,
+                                  err = err,
+                                  call = match.call()),
                       params = list(A = A.tilde,
                                     Lambda = Lambda.tilde,
                                     Sigma_u = Sigma.u.tilde,
@@ -210,9 +218,11 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                       state = list(factors = factors.PCA,
                                    factors.cov = P0_0[1:r,1:r]))
         
-        return(output)
         
       }
+        
+      class(output) <- 'SparseDFM'
+      return(output)
         
   }else if(alg == '2Stage'){          # 2 stage algorithm applied (Doz, 2011)
     
@@ -258,7 +268,10 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   X.sd = X.sd,
                                   X.bal = initialise$X.bal,
                                   eigen = initialise$eigen,
-                                  predict = fore_X_KS),
+                                  predict = fore_X_KS,
+                                  method = alg,
+                                  err = err,
+                                  call = match.call()),
                       params = list(A = A.tilde[1:r,1:r],
                                     Phi = A.tilde[(r+1):k,(r+1):k],
                                     Lambda = Lambda.tilde[,1:r],
@@ -270,7 +283,6 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                    errors.cov = covariance.KS[(r+1):k,(r+1):k,]))
                                    
         
-        return(output)
         
       }else {
         
@@ -280,7 +292,10 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   X.sd = X.sd,
                                   X.bal = initialise$X.bal,
                                   eigen = initialise$eigen,
-                                  predict = fore_X_KS),
+                                  predict = fore_X_KS,
+                                  method = alg,
+                                  err = err,
+                                  call = match.call()),
                       params = list(A = A.tilde,
                                     Lambda = Lambda.tilde,
                                     Sigma_u = Sigma.u.tilde,
@@ -288,11 +303,11 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                       state = list(factors.KS = state.KS,
                                    factors.KS.cov = covariance.KS))
         
-        return(output)
         
       }
         
-        
+      class(output) <- 'SparseDFM'
+      return(output)
       
   }else if(alg == 'EM'){             # EM algorithm applied (Banbura and Modugno, 2014)
     
@@ -358,7 +373,10 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   X.sd = X.sd,
                                   X.bal = initialise$X.bal,
                                   eigen = initialise$eigen,
-                                  predict = fore_X),
+                                  predict = fore_X,
+                                  method = alg,
+                                  err = err,
+                                  call = match.call()),
                       params = list(A = A.tilde[1:r,1:r],
                                     Phi = A.tilde[(r+1):k,(r+1):k],
                                     Lambda = Lambda.tilde[,1:r],
@@ -374,7 +392,6 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                 tol = threshold,
                                 max_iter = max_iter))
         
-        return(output)
         
       }else {
         
@@ -384,7 +401,10 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   X.sd = X.sd,
                                   X.bal = initialise$X.bal,
                                   eigen = initialise$eigen,
-                                  predict = fore_X),
+                                  predict = fore_X,
+                                  method = alg,
+                                  err = err,
+                                  call = match.call()),
                       params = list(A = A.tilde,
                                     Lambda = Lambda.tilde,
                                     Sigma_u = Sigma.u.tilde,
@@ -397,11 +417,11 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                 tol = threshold,
                                 max_iter = max_iter))
         
-        return(output)
         
       }
 
-    
+      class(output) <- 'SparseDFM'
+      return(output)
     
   }else {         # sparse EM algorithm applied (Mosley et al, 2022)
     
@@ -532,7 +552,10 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                     X.sd = X.sd,
                                     X.bal = initialise$X.bal,
                                     eigen = initialise$eigen,
-                                    predict = fore_X),
+                                    predict = fore_X,
+                                    method = alg,
+                                    err = err,
+                                    call = match.call()),
                         params = list(A = A.tilde[1:r,1:r],
                                       Phi = A.tilde[(r+1):k,(r+1):k],
                                       Lambda = Lambda.tilde[,1:r],
@@ -550,8 +573,7 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   num_iter = num_iter,
                                   tol = threshold,
                                   max_iter = max_iter))
-          
-          return(output)
+
           
         }else {
           
@@ -561,7 +583,10 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                     X.sd = X.sd,
                                     X.bal = initialise$X.bal,
                                     eigen = initialise$eigen,
-                                    predict = fore_X),
+                                    predict = fore_X,
+                                    method = alg,
+                                    err = err,
+                                    call = match.call()),
                         params = list(A = A.tilde,
                                       Lambda = Lambda.tilde,
                                       Sigma_u = Sigma.u.tilde,
@@ -577,10 +602,11 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   tol = threshold,
                                   max_iter = max_iter))
           
-          return(output)
           
         }
         
+        class(output) <- 'SparseDFM'
+        return(output)
     
   }
   
