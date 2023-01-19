@@ -18,7 +18,7 @@ SparseDFM(
 )
 }
 \arguments{
-\item{X}{A \code{n x p} numeric data matrix or data frame of (stationary) time series.}
+\item{X}{\code{n x p} numeric data matrix or data frame of (stationary) time series.}
 
 \item{r}{Integer. Number of factors.}
 
@@ -96,10 +96,28 @@ A list-of-lists-like object of class 'SparseDFM' with the following elements:
 }
 }
 \description{
-Main function to allow estimation of a standard DFM or a sparse DFM (with sparse loadings) with:
-an option for IID or AR(1) idiosyncratic errors
-an option for Kalman Filter/Smoother estimation using standard multivariate equations or fast univariate filtering equations
+Main function to allow estimation of a DFM or a sparse DFM (with sparse loadings) on stationary data that may have arbitrary patterns of missing data. We allow the user:
+\itemize{
+\item an option for estimation method - \code{"PCA"}, \code{"2Stage"}, \code{"EM"} or \code{"EM-sparse"}
+\item an option for \code{IID} or \code{AR1} idiosyncratic errors
+\item an option for Kalman Filter/Smoother estimation using standard \code{multivariate} equations or fast \code{univariate} filtering equations
+}
 }
 \details{
-Add details of the model here.
+For full details of the model please refer to Mosley et al. (2023).
+}
+\references{
+Banbura, M., & Modugno, M. (2014). Maximum likelihood estimation of factor models on datasets with arbitrary pattern of missing data. \emph{Journal of Applied Econometrics, 29}(1), 133-160.
+
+Doz, C., Giannone, D., & Reichlin, L. (2011). A two-step estimator for large approximate dynamic factor models based on Kalman filtering. \emph{Journal of Econometrics, 164}(1), 188-205.
+
+Giannone, D., Reichlin, L., & Small, D. (2008). Nowcasting: The real-time informational content of macroeconomic data. \emph{Journal of monetary economics, 55}(4), 665-676.
+
+Koopman, S. J., & Durbin, J. (2000). Fast filtering and smoothing for multivariate state space models. \emph{Journal of Time Series Analysis, 21}(3), 281-296.
+
+Mosley, L., Chan, TS., & Gibberd, A. (2023). SparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings.
+
+Shumway, R. H., & Stoffer, D. S. (1982). An approach to time series smoothing and forecasting using the EM algorithm. \emph{Journal of time series analysis, 3}(4), 253-264.
+
+Stock, J. H., & Watson, M. W. (2002). Forecasting using principal components from a large number of predictors. \emph{Journal of the American statistical association, 97}(460), 1167-1179.
 }
