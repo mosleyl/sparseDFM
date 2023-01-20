@@ -62,7 +62,8 @@ A list-of-lists-like object of class 'SparseDFM' with the following elements:
 \code{X.sd} \tab\tab is a p-dimensional numeric vector of column standard deviations of \eqn{X}.  \cr\cr
 \code{X.bal} \tab\tab is a \eqn{n \times p}{n x p} numeric data matrix of the original \eqn{X} with missing data interpolated using \code{fill_NA()}. \cr\cr
 \code{eigen} \tab\tab is the eigen decomposition of \code{X.bal}. \cr\cr
-\code{predict} \tab\tab is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. This has been unscaled back to original data scale if \code{standardize} is \code{TRUE}. \cr\cr
+\code{fitted} \tab\tab is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. \cr\cr
+\code{fitted.unscaled} is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. This has been unscaled back to original data scale if \code{standardize} is \code{TRUE}. \cr\cr
 \code{method} \tab\tab the estimation algorithm used (\code{alg}). \cr\cr
 \code{err} \tab\tab the type of idiosyncratic errors assumed. Either \code{IID} or \code{AR1}. \cr\cr
 \code{call} \tab\tab call object obtained from \code{match.call()}. \cr\cr

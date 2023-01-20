@@ -346,11 +346,7 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     dots = list(...)
     
-    if(x$data$err == 'IID'){
-      resids = x$data$X.bal - tcrossprod(x$state$factors, x$params$Lambda)
-    }else{
-      resids = x$data$X.bal - tcrossprod(x$state$factors, x$params$Lambda) - x$params$errors
-    }
+    resids = x$data$X.bal - x$data$fitted.scaled
     
     
     if(residual.type=='boxplot'){
@@ -377,6 +373,63 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
   }
   
 }
+
+
+#' @name residuals.SparseDFM
+#' @aliases residuals.SparseDFM
+#' @aliases resid.SparseDFM
+#' @aliases fitted.SparseDFM
+#' 
+#' @title 
+#' SparseDFM Residuals and Fitted Values 
+#' 
+#' @description 
+#' Obtain the residuals or fitted values of the \code{SparseDFM} fit. 
+#' 
+#' @param x an object of class 'SparseDFM'.
+#' @param standardize logical. The residuals and fitted values should be standardized. Default is \code{FALSE}, values returned in the original data \eqn{\bm{X}}{X} scale.
+#' 
+#' @return Residuals or fitted values of \code{SparseDFM}.
+#' 
+#' @export
+
+
+fitted.SparseDFM <- function(x, standardize = FALSE){
+  
+  if(standardize){
+    return(x$data$fitted.scaled)
+  }else{
+    return(x$data$fitted)
+  }
+  
+}
+
+
+#' @rdname residuals.SparseDFM
+#' 
+#' @param x an object of class 'SparseDFM'.
+#' @param standardize logical. The residuals and fitted values should be standardized. Default is \code{FALSE}, values returned in the original data \eqn{\bm{X}}{X} scale.
+#' 
+#' @export
+
+residuals.SparseDFM <- function(x, standardize = FALSE){
+  
+  if(standardize){
+    res = x$data$X.bal - x$data$fitted
+  }else{
+    n = dim(x$data$X.bal)[1]
+    X.bal_raw = kronecker(t(x$data$X.sd),rep(1,n))*x$data$X.bal + kronecker(t(x$data$X.mean),rep(1,n))
+    res = X.bal_raw - x$data$fitted
+  }
+  return(res)
+  
+}
+
+
+
+
+
+
 
 
 

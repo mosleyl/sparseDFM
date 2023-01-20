@@ -45,7 +45,8 @@
 #'      \code{X.sd} \tab\tab is a p-dimensional numeric vector of column standard deviations of \eqn{X}.  \cr\cr
 #'      \code{X.bal} \tab\tab is a \eqn{n \times p}{n x p} numeric data matrix of the original \eqn{X} with missing data interpolated using \code{fill_NA()}. \cr\cr
 #'      \code{eigen} \tab\tab is the eigen decomposition of \code{X.bal}. \cr\cr 
-#'      \code{predict} \tab\tab is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. This has been unscaled back to original data scale if \code{standardize} is \code{TRUE}. \cr\cr
+#'      \code{fitted} \tab\tab is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. \cr\cr
+#'      \code{fitted.unscaled} is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. This has been unscaled back to original data scale if \code{standardize} is \code{TRUE}. \cr\cr
 #'      \code{method} \tab\tab the estimation algorithm used (\code{alg}). \cr\cr
 #'      \code{err} \tab\tab the type of idiosyncratic errors assumed. Either \code{IID} or \code{AR1}. \cr\cr
 #'      \code{call} \tab\tab call object obtained from \code{match.call()}. \cr\cr
@@ -167,9 +168,11 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         factors.PCA = initialise$factors.pca
         loadings.PCA = initialise$loadings.pca
         
-        fore_X = factors.PCA %*% t(loadings.PCA)
+        fit_x = factors.PCA %*% t(loadings.PCA)
         if(standardize){
-          fore_X = kronecker(t(X.sd),rep(1,n))*fore_X + kronecker(t(X.mean),rep(1,n))
+          fit_X = kronecker(t(X.sd),rep(1,n))*fit_x + kronecker(t(X.mean),rep(1,n))
+        }else{
+          fit_X = fit_x
         }
         
         errors.PCA = initialise$X.bal - factors.PCA %*% t(loadings.PCA)
@@ -184,7 +187,8 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   X.sd = X.sd,
                                   X.bal = initialise$X.bal,
                                   eigen = initialise$eigen,
-                                  predict = fore_X,
+                                  fitted = fit_x,
+                                  fitted.unscaled = fit_X,
                                   method = alg,
                                   err = err,
                                   call = match.call()),
@@ -207,7 +211,8 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   X.sd = X.sd,
                                   X.bal = initialise$X.bal,
                                   eigen = initialise$eigen,
-                                  predict = fore_X,
+                                  fitted = fit_x,
+                                  fitted.unscaled = fit_X,
                                   method = alg,
                                   err = err,
                                   call = match.call()),
@@ -252,9 +257,11 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         
     ## Fill in missing data in X
         
-        fore_X_KS = state.KS %*% t(Lambda.tilde)
+        fit_x = state.KS %*% t(Lambda.tilde)
         if(standardize){
-          fore_X_KS = kronecker(t(X.sd),rep(1,n))*fore_X_KS + kronecker(t(X.mean),rep(1,n))
+          fit_X = kronecker(t(X.sd),rep(1,n))*fit_x + kronecker(t(X.mean),rep(1,n))
+        }else{
+          fit_X = fit_x
         }
         
         
@@ -268,7 +275,8 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   X.sd = X.sd,
                                   X.bal = initialise$X.bal,
                                   eigen = initialise$eigen,
-                                  predict = fore_X_KS,
+                                  fitted = fit_x,
+                                  fitted.unscaled = fit_X,
                                   method = alg,
                                   err = err,
                                   call = match.call()),
@@ -292,7 +300,8 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   X.sd = X.sd,
                                   X.bal = initialise$X.bal,
                                   eigen = initialise$eigen,
-                                  predict = fore_X_KS,
+                                  fitted = fit_x,
+                                  fitted.unscaled = fit_X,
                                   method = alg,
                                   err = err,
                                   call = match.call()),
@@ -358,9 +367,11 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
       
       # fill in missing data in X
       
-      fore_X = state.EM %*% t(Lambda.tilde)
+      fit_x = state.EM %*% t(Lambda.tilde)
       if(standardize){
-        fore_X = kronecker(t(X.sd),rep(1,n))*fore_X + kronecker(t(X.mean),rep(1,n))
+        fit_X = kronecker(t(X.sd),rep(1,n))*fit_x + kronecker(t(X.mean),rep(1,n))
+      }else{
+        fit_X = fit_x
       }
       
       ## Output for EM - depends on if err = 'AR1' or 'IID'
@@ -373,7 +384,8 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   X.sd = X.sd,
                                   X.bal = initialise$X.bal,
                                   eigen = initialise$eigen,
-                                  predict = fore_X,
+                                  fitted = fit_x,
+                                  fitted.unscaled = fit_X,
                                   method = alg,
                                   err = err,
                                   call = match.call()),
@@ -401,7 +413,8 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   X.sd = X.sd,
                                   X.bal = initialise$X.bal,
                                   eigen = initialise$eigen,
-                                  predict = fore_X,
+                                  fitted = fit_x,
+                                  fitted.unscaled = fit_X,
                                   method = alg,
                                   err = err,
                                   call = match.call()),
@@ -537,9 +550,11 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         
       ## Fill in missing data in X
         
-        fore_X = state.EM %*% t(Lambda.tilde)
+        fit_x = state.EM %*% t(Lambda.tilde)
         if(standardize){
-          fore_X = kronecker(t(X.sd),rep(1,n))*fore_X + kronecker(t(X.mean),rep(1,n))
+          fit_X = kronecker(t(X.sd),rep(1,n))*fit_x + kronecker(t(X.mean),rep(1,n))
+        }else{
+          fit_X = fit_x
         }
         
       ## Output for EM-sparse - depends on if err = 'AR1' or 'IID'
@@ -552,7 +567,8 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                     X.sd = X.sd,
                                     X.bal = initialise$X.bal,
                                     eigen = initialise$eigen,
-                                    predict = fore_X,
+                                    fitted = fit_x,
+                                    fitted.unscaled = fit_X,
                                     method = alg,
                                     err = err,
                                     call = match.call()),
@@ -583,7 +599,8 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                     X.sd = X.sd,
                                     X.bal = initialise$X.bal,
                                     eigen = initialise$eigen,
-                                    predict = fore_X,
+                                    fitted = fit_x,
+                                    fitted.unscaled = fit_X,
                                     method = alg,
                                     err = err,
                                     call = match.call()),
