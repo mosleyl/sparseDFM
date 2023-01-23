@@ -2,7 +2,9 @@
 
 S3method(fitted,SparseDFM)
 S3method(plot,SparseDFM)
+S3method(predict,SparseDFM)
 S3method(print,SparseDFM)
+S3method(print,SparseDFM_forecast)
 S3method(residuals,SparseDFM)
 S3method(summary,SparseDFM)
 export(SparseDFM)

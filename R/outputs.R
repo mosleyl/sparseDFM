@@ -425,10 +425,112 @@ residuals.SparseDFM <- function(x, standardize = FALSE){
   
 }
 
+#' @name predict.SparseDFM
+#' @aliases predict.SparseDFM
+#' @aliases print.SparseDFM_forecast
+#' 
+#' @title 
+#' Forecasting factor estimates and data series. 
+#' 
+#' @description 
+#' Predict the next h steps ahead for the factor estimates and the data series. Given information up to time \eqn{t}{t}, a h-step ahead forecast is \eqn{\bm{X}_{t+h}=\bm{\Lambda}\bm{A}^{h}\bm{F}_t+\bm{\Phi}^h\bm{\epsilon}_t}{X_{t+h}=\Lambda A^h F_t+\Phi^h \epsilon_t}, where \eqn{\bm{\Phi}=0}{\Phi = 0} for the IID idiosyncratic error case.
+#' 
+#' @param x an object of class 'SparseDFM'.
+#' @param h integer. The number of steps ahead to compute the forecast for. Default is \eqn{h=1}{h=1}.
+#' @param standardize logical. Returns data series forecasts in the original data scale if set to \code{FALSE}. Default is \code{FALSE}. 
+#' 
+#' @return X_hat \eqn{h \times p}{h x p} numeric matrix of data series forecasts.
+#' @return F_hat \eqn{h \times r}{h x r} numeric matrix of factor forecasts.
+#' @return e_hat \eqn{h \times p}{h x p} numeric matrix of AR(1) idiosyncratic error forecasts if \code{err}=\code{AR1} in \code{SparseDFM}.
+#' @return h forecasts produced for h steps ahead.
+#' @return err the type of idiosyncratic errors used in \code{SparseDFM}.
+#' 
+#' @export
 
+predict.SparseDFM <- function(x, h = 1, standardize = FALSE){
+  
+  A = x$params$A
+  Lambda = x$params$Lambda
+  n = dim(x$state$factors)[1]
+  r = dim(x$state$factors)[2]
+  p = dim(x$data$X.bal)[2]
+  F_old = x$state$factors[n,]
+  
+  if(x$data$err == 'AR1'){
+    Phi = x$params$Phi
+    e_old = x$state$errors
+    e_new = matrix(NA, nrow = h, ncol = p)
+  }
+  
+  F_new = matrix(NA, nrow = h, ncol = r)
+  X_new = matrix(NA, nrow = h, ncol = p)
+  
+  for(i in 1:h){
+    
+    F_new[i,] = A %*% F_old 
+    X_new[i,] = F_new[i,] %*% t(Lambda)
+    
+    if(x$data$err == 'AR1'){
+      
+      e_new[i,] = Phi %*% e_old
+      X_new[i,] = X_new[i,] + e_new[i,]
+      e_old = e_new[i,]
+      
+    }
+    
+    F_old = F_new[i,]
+    
+  }
+  
+  if(standardize){
+    X_new = X_new
+  }else{
+    X_new = kronecker(t(x$data$X.sd),rep(1,h))*X_new + kronecker(t(x$data$X.mean),rep(1,h))
+  }
+  
+  if(x$data$err == 'AR1'){
+    output = list(X_hat = X_new,
+                  F_hat = F_new,
+                  e_hat = e_new,
+                  h = h,
+                  err = x$data$err)
+  }else{
+    output = list(X_hat = X_new,
+                  F_hat = F_new,
+                  h = h,
+                  err = x$data$err)
+  }
+  
+  class(output) <- "SparseDFM_forecast"
+  return(output)
+  
+}
 
+#' @rdname predict.SparseDFM 
+#' @param x an object of class 'SparseDFM_forecast' from \code{predict.SparseDFM}.
+#' @returns 
+#' Prints out the h-step ahead forecast from \code{predict.SparseDFM}.
+#' 
+#' @export
 
-
+print.SparseDFM_forecast <- function(x){
+  
+  h = x$h
+  X_hat = x$X_hat
+  F_hat = x$F_hat
+  
+  cat('\n The', h, 'step ahead forecast for the data series are \n')
+  print(X_hat)
+  
+  cat('\n The', h, 'step ahead forecast for the factors are \n')
+  print(F_hat)
+  
+  if(x$err == 'AR1'){
+    cat('\n The', h, 'step ahead forecast for the AR(1) idiosyncratic errors are \n')
+    print(x$e_hat)
+  }
+  
+}
 
 
 
