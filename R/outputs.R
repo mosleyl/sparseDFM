@@ -506,18 +506,19 @@ predict.SparseDFM <- function(x, h = 1, standardize = FALSE){
   
 }
 
+
 #' @rdname predict.SparseDFM 
-#' @param x an object of class 'SparseDFM_forecast' from \code{predict.SparseDFM}.
+#' @param y an object of class 'SparseDFM_forecast' from \code{predict.SparseDFM}.
 #' @returns 
 #' Prints out the h-step ahead forecast from \code{predict.SparseDFM}.
 #' 
 #' @export
 
-print.SparseDFM_forecast <- function(x){
+print.SparseDFM_forecast <- function(y){
   
-  h = x$h
-  X_hat = x$X_hat
-  F_hat = x$F_hat
+  h = y$h
+  X_hat = y$X_hat
+  F_hat = y$F_hat
   
   cat('\n The', h, 'step ahead forecast for the data series are \n')
   print(X_hat)
@@ -525,9 +526,9 @@ print.SparseDFM_forecast <- function(x){
   cat('\n The', h, 'step ahead forecast for the factors are \n')
   print(F_hat)
   
-  if(x$err == 'AR1'){
+  if(y$err == 'AR1'){
     cat('\n The', h, 'step ahead forecast for the AR(1) idiosyncratic errors are \n')
-    print(x$e_hat)
+    print(y$e_hat)
   }
   
 }
