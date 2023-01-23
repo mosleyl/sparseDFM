@@ -346,7 +346,7 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     dots = list(...)
     
-    resids = x$data$X.bal - x$data$fitted.scaled
+    resids = x$data$X.bal - x$data$fitted
     
     
     if(residual.type=='boxplot'){
@@ -397,9 +397,9 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
 fitted.SparseDFM <- function(x, standardize = FALSE){
   
   if(standardize){
-    return(x$data$fitted.scaled)
-  }else{
     return(x$data$fitted)
+  }else{
+    return(x$data$fitted.unscaled)
   }
   
 }
@@ -419,7 +419,7 @@ residuals.SparseDFM <- function(x, standardize = FALSE){
   }else{
     n = dim(x$data$X.bal)[1]
     X.bal_raw = kronecker(t(x$data$X.sd),rep(1,n))*x$data$X.bal + kronecker(t(x$data$X.mean),rep(1,n))
-    res = X.bal_raw - x$data$fitted
+    res = X.bal_raw - x$data$fitted.unscaled
   }
   return(res)
   

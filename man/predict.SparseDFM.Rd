@@ -2,13 +2,10 @@
 % Please edit documentation in R/outputs.R
 \name{predict.SparseDFM}
 \alias{predict.SparseDFM}
-\alias{forecast.SparseDFM}
 \alias{print.SparseDFM_forecast}
 \title{Forecasting factor estimates and data series.}
 \usage{
 \method{predict}{SparseDFM}(x, h = 1, standardize = FALSE)
-
-forecast.SparseDFM(x, h = 1, standardize = FALSE)
 
 \method{print}{SparseDFM_forecast}(y)
 }
