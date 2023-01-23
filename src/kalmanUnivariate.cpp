@@ -44,22 +44,22 @@ List kalmanUnivariate(const arma::mat& X, const arma::mat& a0_0, const arma::mat
   const arma::uword p = X.n_cols;
   const arma::uword k = A.n_rows;
 
-  arma::mat at_tlag(k, n, arma::fill::none);        // predicted state mean
-  arma::cube Pt_tlag(k, k, n, arma::fill::none);    // predicted state covariance
-  arma::mat at_t(k, n, arma::fill::none);           // filtered state mean
-  arma::cube Pt_t(k, k, n, arma::fill::none);       // filtered state covariance
-  arma::mat at_n(k, n, arma::fill::none);           // smoothed state mean
-  arma::cube Pt_n(k, k, n, arma::fill::none);       // smoothed state covariance
-  arma::cube Pt_tlag_n(k, k, n, arma::fill::none);  // smoothed state covariance with lag
+  arma::mat at_tlag(k, n, arma::fill::zeros);        // predicted state mean
+  arma::cube Pt_tlag(k, k, n, arma::fill::zeros);    // predicted state covariance
+  arma::mat at_t(k, n, arma::fill::zeros);           // filtered state mean
+  arma::cube Pt_t(k, k, n, arma::fill::zeros);       // filtered state covariance
+  arma::mat at_n(k, n, arma::fill::zeros);           // smoothed state mean
+  arma::cube Pt_n(k, k, n, arma::fill::zeros);       // smoothed state covariance
+  arma::cube Pt_tlag_n(k, k, n, arma::fill::zeros);  // smoothed state covariance with lag
 
   arma::vec at_i = vectorise(a0_0);           // initial state mean
   arma::mat Pt_i = P0_0;                      // initial state covariance
 
   double logl = 0.0;                    // log-likelihood
 
-  arma::mat vt(p, n, arma::fill::none);             // innovation
+  arma::mat vt(p, n, arma::fill::zeros);             // innovation
   arma::mat inv_Ft(p, n, arma::fill::zeros);        // inverse innovation variance
-  arma::cube Kt(k, p, n, arma::fill::none);         // Kalman gain
+  arma::cube Kt(k, p, n, arma::fill::zeros);         // Kalman gain
 
   // Kalman filter loop for t = 1,...,n
   const arma::vec diag_Sig_e = diagvec(Sig_e);
@@ -82,8 +82,8 @@ List kalmanUnivariate(const arma::mat& X, const arma::mat& a0_0, const arma::mat
       const arma::vec PZt_i = Pt_i * Zt_i.t();
       const double Ft_i = dot(Zt_i, PZt_i) + diag_Sig_e(i);
 
-      // Skip yt_i if Ft_i is zero
-      if (abs(Ft_i) <= arma::datum::eps) continue;
+      // Skip yt_i if Ft_i <= 0
+	  if (Ft_i <= 0) continue;
 
       const double inv_Ft_i = 1.0 / Ft_i;
       const arma::vec Kt_i = PZt_i * inv_Ft_i;
