@@ -83,7 +83,7 @@ List kalmanUnivariate(const arma::mat& X, const arma::mat& a0_0, const arma::mat
       const double Ft_i = dot(Zt_i, PZt_i) + diag_Sig_e(i);
 
       // Skip yt_i if Ft_i <= 0
-	  if (Ft_i <= 0) continue;
+      if (Ft_i <= 0) continue;
 
       const double inv_Ft_i = 1.0 / Ft_i;
       const arma::vec Kt_i = PZt_i * inv_Ft_i;
