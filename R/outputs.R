@@ -223,7 +223,7 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       
       for(i in which.factors){
         
-        factor.lab[i] = paste('F',i)
+        factor.lab[i] = paste0('F',i)
         
       }
       
@@ -232,13 +232,14 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     trL = t(x$params$Lambda)
     lw = Matrix::Matrix(trL[which.factors,which.series], sparse = TRUE)
     
+    series.names = unlist(dimnames(x$params$Lambda)[1])
     
     Matrix::image(lw, xlab = if(is.null(dots$xlab))'Series' else dots$xlab,
                   ylab = if(is.null(dots$ylab))'Factor' else dots$ylab, sub = NULL,
                   main = if(is.null(dots$main)) 'Loadings Heatmap' else dots$main,
                   colorkey = colorkey, col.regions = col.regions,
                   scales = list(y=list(at = 1:(length(which.factors)), labels = factor.lab),
-                                x=if(is.null(series.lab)) list(at = 1:(length(which.series)), labels = which.series) else list(at = series.labpos, labels = series.lab)))
+                                x=if(is.null(series.lab)) list(at = 1:(length(which.series)), labels = series.names, rot = 90) else list(at = series.labpos, labels = series.lab, rot = 90)))
     
     
   }

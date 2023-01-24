@@ -150,6 +150,11 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
     X = X.scale
   }
   
+  # label variables 
+  obs.names = unlist(dimnames(X)[1])
+  series.names = unlist(dimnames(X)[2])
+  factor.names = paste0('F',1:r)
+  f.error.names = paste0('u',1:r)
   
   ## Apply algorithm: PCA, 2Stage, EM, EM-sparse
 
@@ -175,11 +180,36 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
           fit_X = fit_x
         }
         
+        dimnames(fit_x) = dimnames(X)
+        dimnames(fit_X) = dimnames(X)
+        
         errors.PCA = initialise$X.bal - factors.PCA %*% t(loadings.PCA)
+        
+        dimnames(factors.PCA) = list(obs.names, factor.names)
+        dimnames(errors.PCA) = list(obs.names, series.names)
+      
+      
         
     ## Output for PCA - depends on if err = 'AR1' or 'IID'
         
       if(err == 'AR1'){
+        
+        A = A.tilde[1:r,1:r]
+        Phi = A.tilde[(r+1):k,(r+1):k]
+        Lambda = Lambda.tilde[,1:r]
+        Sigma_u = Sigma.u.tilde[1:r,1:r]
+        Sigma_epsilon = Sigma.u.tilde[(r+1):k,(r+1):k]
+        factors.cov = P0_0[1:r,1:r]
+        errors.cov = P0_0[(r+1):k,(r+1):k]
+
+        dimnames(A) = list(factor.names,factor.names)
+        dimnames(Phi) = list(series.names,series.names)
+        dimnames(Lambda) = list(series.names, factor.names)
+        dimnames(Sigma_u) = list(f.error.names, f.error.names)
+        dimnames(Sigma_epsilon) = list(series.names, series.names)
+        dimnames(factors.cov) = list(factor.names, factor.names)
+        dimnames(errors.cov) = list(series.names, series.names)
+        
         
         output = list(data = list(X = X.raw,
                                   standardize = standardize,
@@ -192,15 +222,15 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   method = alg,
                                   err = err,
                                   call = match.call()),
-                      params = list(A = A.tilde[1:r,1:r],
-                                    Phi = A.tilde[(r+1):k,(r+1):k],
-                                    Lambda = Lambda.tilde[,1:r],
-                                    Sigma_u = Sigma.u.tilde[1:r,1:r],
-                                    Sigma_epsilon = Sigma.u.tilde[(r+1):k,(r+1):k]),
+                      params = list(A = A,
+                                    Phi = Phi,
+                                    Lambda = Lambda,
+                                    Sigma_u = Sigma_u,
+                                    Sigma_epsilon = Sigma_epsilon),
                       state = list(factors = factors.PCA,
                                    errors = errors.PCA,
-                                   factors.cov = P0_0[1:r,1:r],
-                                   errors.cov = P0_0[(r+1):k,(r+1):k]))
+                                   factors.cov = factors.cov,
+                                   errors.cov = errors.cov))
         
         
       }else {
