@@ -32,11 +32,11 @@
 
 \item{type}{character. The type of plot: \code{"factor"}, \code{"loading.heatmap"}, \code{"loading.lineplot"}, \code{"loading.grouplineplot"} or \code{"residual"}. Default is \code{"factor"}.}
 
-\item{which.factors}{numeric vector of integers representing which factors should be plotted in \code{"factor"} and \code{"loading.heatmap"}. Default is which.factors = 1:(dim(x$state$factors)\link{2}), plotting them all. Accepts a single integer if just one factor required.}
+\item{which.factors}{numeric vector of integers representing which factors should be plotted in \code{"factor"} and \code{"loading.heatmap"}. Default is \code{which.factors}=\code{1:(dim(x$state$factors)[2])}, plotting them all. Accepts a single integer if just one factor required.}
 
 \item{scale.factors}{logical. Standardize the factor estimates when plotting in \code{"factor"}. Default is \code{TRUE}.}
 
-\item{which.series}{numeric vector of integers representing which series should be plotted in \code{"loading.heatmap"}, \code{"loading.lineplot"}, \code{"loading.grouplineplot"} and \code{"residual"}. Default is which.series = 1:(dim(x$params$Lambda)\link{1}), plotting them all.}
+\item{which.series}{numeric vector of integers representing which series should be plotted in \code{"loading.heatmap"}, \code{"loading.lineplot"}, \code{"loading.grouplineplot"} and \code{"residual"}. Default is \code{which.series} = \code{1:(dim(x$params$Lambda)[1])}, plotting them all.}
 
 \item{loading.factor}{integer. The factor to use in \code{"loading.lineplot"} and \code{"loading.grouplineplot"}. Default is 1.}
 

@@ -9,13 +9,14 @@
 #' Summary and print outputs for class 'SparseDFM'.
 #' 
 #' @param x an object of class 'SparseDFM'
+#' @param \dots Further \code{print} arguments. 
 #' 
 #' @returns 
 #' Information on the model fitted.
 #' 
 #' @export
 
-print.SparseDFM <- function(x){
+print.SparseDFM <- function(x,...){
   
   X = x$data$X
   A = x$params$A
@@ -39,39 +40,40 @@ print.SparseDFM <- function(x){
 }
 
 #' @rdname summary.SparseDFM
-#' @param x an object of class 'SparseDFM'
+#' @param object an object of class 'SparseDFM'
+#' @param \dots Further \code{summary} arguments.
 #' @returns 
 #' Summary information on estimation details. 
 #' 
 #' @export
 
-summary.SparseDFM <- function(x){
+summary.SparseDFM <- function(object,...){
     
-  X = x$data$X
-  A = x$params$A
+  X = object$data$X
+  A = object$params$A
   n = dim(X)[1]
   p = dim(X)[2]
   r = dim(A)[1]
   
-  if(x$data$method=='PCA'){
+  if(object$data$method=='PCA'){
     typeFM = 'Static'
-  }else if(x$data$method=='EM-sparse'){
+  }else if(object$data$method=='EM-sparse'){
     typeFM = 'Sparse Dynamic'
   }else{
     typeFM = 'Dynamic'
   }
   
-  cat('\nCall: \n\n', paste(deparse(x$data$call)))
+  cat('\nCall: \n\n', paste(deparse(object$data$call)))
   
-  cat('\n\n',typeFM, 'Factor Model using', x$data$method, 'with: \n\n n =', n,
+  cat('\n\n',typeFM, 'Factor Model using', object$data$method, 'with: \n\n n =', n,
       'observations, \n p =', p, 'variables, \n r =', r, 'factors, \n err =',
-      x$data$err)
+      object$data$err)
   
   cat('\n\n The r x r factor transition matrix A \n')
-  print(x$params$A)
+  print(object$params$A)
   
   cat('\n\n The r x r factor transition error covariance matrix Sigma_u \n')
-  print(x$params$Sigma_u)
+  print(object$params$Sigma_u)
   
 
 }
@@ -92,9 +94,9 @@ summary.SparseDFM <- function(x){
 #' 
 #' @param x an object of class 'SparseDFM'.
 #' @param type character. The type of plot: \code{"factor"}, \code{"loading.heatmap"}, \code{"loading.lineplot"}, \code{"loading.grouplineplot"} or \code{"residual"}. Default is \code{"factor"}.
-#' @param which.factors numeric vector of integers representing which factors should be plotted in \code{"factor"} and \code{"loading.heatmap"}. Default is which.factors = 1:(dim(x$state$factors)[2]), plotting them all. Accepts a single integer if just one factor required. 
+#' @param which.factors numeric vector of integers representing which factors should be plotted in \code{"factor"} and \code{"loading.heatmap"}. Default is \code{which.factors}=\code{1:(dim(x$state$factors)[2])}, plotting them all. Accepts a single integer if just one factor required. 
 #' @param scale.factors logical. Standardize the factor estimates when plotting in \code{"factor"}. Default is \code{TRUE}.
-#' @param which.series numeric vector of integers representing which series should be plotted in \code{"loading.heatmap"}, \code{"loading.lineplot"}, \code{"loading.grouplineplot"} and \code{"residual"}. Default is which.series = 1:(dim(x$params$Lambda)[1]), plotting them all.
+#' @param which.series numeric vector of integers representing which series should be plotted in \code{"loading.heatmap"}, \code{"loading.lineplot"}, \code{"loading.grouplineplot"} and \code{"residual"}. Default is \code{which.series} = \code{1:(dim(x$params$Lambda)[1])}, plotting them all.
 #' @param loading.factor integer. The factor to use in \code{"loading.lineplot"} and \code{"loading.grouplineplot"}. Default is 1. 
 #' @param series.col character. The colour of the background series plotted in \code{"factor"}. Default is \code{series.col} = \code{"grey"}.
 #' @param factor.col character. The colour of the factor estimate line in \code{"factor"}. Default is \code{factor.col} = \code{"black"}.
@@ -115,7 +117,7 @@ summary.SparseDFM <- function(x){
 #' Plots for the output of SparseDFM().
 #' 
 #' @importFrom Matrix Matrix image 
-#' @importFrom ggplot2 ggplot aes geom_segment theme_light scale_color_manual theme element_text element_blank xlab ylab ggtitle 
+#' @importFrom ggplot2 ggplot aes geom_segment theme_light scale_color_manual theme element_text element_blank xlab ylab ggtitle geom_boxplot
 #' @importFrom graphics par matplot lines box axis mtext boxplot plot 
 #' @importFrom reshape2 melt
 #' 
@@ -128,7 +130,8 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
                            colorkey = TRUE, col.regions = NULL, group.names = NULL, group.cols = NULL, 
                            group.legend = TRUE, residual.type = 'boxplot', scatter.series = 1, ...){
   
-  # Do warning checks 
+  # global variable declaration 
+  y = Group = Var2 = value = NULL
   
   ## type = 'factor'
   
@@ -271,8 +274,8 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     
     # plot
-    ggplot(data, aes(x=factor(x, level = series.names), y=y)) +
-      geom_segment( aes(x=factor(x, level = series.names), xend=factor(x, level = series.names), y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
+    ggplot(data, aes(x=factor(x, levels = series.names), y=y)) +
+      geom_segment( aes(x=factor(x, levels = series.names), xend=factor(x, levels = series.names), y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
       theme_light() +
       scale_color_manual(breaks=unique_group_names,values = mycolors) +
       theme(
@@ -322,8 +325,8 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
   
     
     # plot
-    ggplot(data, aes(x=factor(x, level = series.names), y=y)) +
-      geom_segment( aes(x=factor(x, level = series.names), xend=factor(x, level = series.names), y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
+    ggplot(data, aes(x=factor(x, levels = series.names), y=y)) +
+      geom_segment( aes(x=factor(x, levels = series.names), xend=factor(x, levels = series.names), y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
       theme_light() +
       scale_color_manual(breaks=unique_group_names,values = mycolors) +
       theme(
@@ -403,20 +406,22 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
 #' @description 
 #' Obtain the residuals or fitted values of the \code{SparseDFM} fit. 
 #' 
-#' @param x an object of class 'SparseDFM'.
+#' @param object an object of class 'SparseDFM'.
 #' @param standardize logical. The residuals and fitted values should be standardized. Default is \code{FALSE}, values returned in the original data \eqn{\bm{X}}{X} scale.
+#' @param \dots Further \code{fitted} arguments.
 #' 
 #' @return Residuals or fitted values of \code{SparseDFM}.
 #' 
+#' @rdname residuals.SparseDFM
 #' @export
 
 
-fitted.SparseDFM <- function(x, standardize = FALSE){
+fitted.SparseDFM <- function(object, standardize = FALSE,...){
   
   if(standardize){
-    return(x$data$fitted)
+    return(object$data$fitted)
   }else{
-    return(x$data$fitted.unscaled)
+    return(object$data$fitted.unscaled)
   }
   
 }
@@ -424,19 +429,20 @@ fitted.SparseDFM <- function(x, standardize = FALSE){
 
 #' @rdname residuals.SparseDFM
 #' 
-#' @param x an object of class 'SparseDFM'.
+#' @param object an object of class 'SparseDFM'.
 #' @param standardize logical. The residuals and fitted values should be standardized. Default is \code{FALSE}, values returned in the original data \eqn{\bm{X}}{X} scale.
+#' @param \dots Further \code{residuals} arguments.
 #' 
 #' @export
 
-residuals.SparseDFM <- function(x, standardize = FALSE){
+residuals.SparseDFM <- function(object, standardize = FALSE,...){
   
   if(standardize){
-    res = x$data$X.bal - x$data$fitted
+    res = object$data$X.bal - object$data$fitted
   }else{
-    n = dim(x$data$X.bal)[1]
-    X.bal_raw = kronecker(t(x$data$X.sd),rep(1,n))*x$data$X.bal + kronecker(t(x$data$X.mean),rep(1,n))
-    res = X.bal_raw - x$data$fitted.unscaled
+    n = dim(object$data$X.bal)[1]
+    X.bal_raw = kronecker(t(object$data$X.sd),rep(1,n))*object$data$X.bal + kronecker(t(object$data$X.mean),rep(1,n))
+    res = X.bal_raw - object$data$fitted.unscaled
   }
   return(res)
   
@@ -452,9 +458,10 @@ residuals.SparseDFM <- function(x, standardize = FALSE){
 #' @description 
 #' Predict the next h steps ahead for the factor estimates and the data series. Given information up to time \eqn{t}{t}, a h-step ahead forecast is \eqn{\bm{X}_{t+h}=\bm{\Lambda}\bm{A}^{h}\bm{F}_t+\bm{\Phi}^h\bm{\epsilon}_t}{X_{t+h}=\Lambda A^h F_t+\Phi^h \epsilon_t}, where \eqn{\bm{\Phi}=0}{\Phi = 0} for the IID idiosyncratic error case.
 #' 
-#' @param x an object of class 'SparseDFM'.
+#' @param object an object of class 'SparseDFM'.
 #' @param h integer. The number of steps ahead to compute the forecast for. Default is \eqn{h=1}{h=1}.
 #' @param standardize logical. Returns data series forecasts in the original data scale if set to \code{FALSE}. Default is \code{FALSE}. 
+#' @param \dots Further \code{predict} arguments.
 #' 
 #' @return X_hat \eqn{h \times p}{h x p} numeric matrix of data series forecasts.
 #' @return F_hat \eqn{h \times r}{h x r} numeric matrix of factor forecasts.
@@ -464,18 +471,18 @@ residuals.SparseDFM <- function(x, standardize = FALSE){
 #' 
 #' @export
 
-predict.SparseDFM <- function(x, h = 1, standardize = FALSE){
+predict.SparseDFM <- function(object, h = 1, standardize = FALSE,...){
   
-  A = x$params$A
-  Lambda = x$params$Lambda
-  n = dim(x$state$factors)[1]
-  r = dim(x$state$factors)[2]
-  p = dim(x$data$X.bal)[2]
-  F_old = x$state$factors[n,]
+  A = object$params$A
+  Lambda = object$params$Lambda
+  n = dim(object$state$factors)[1]
+  r = dim(object$state$factors)[2]
+  p = dim(object$data$X.bal)[2]
+  F_old = object$state$factors[n,]
   
-  if(x$data$err == 'AR1'){
-    Phi = x$params$Phi
-    e_old = x$state$errors
+  if(object$data$err == 'AR1'){
+    Phi = object$params$Phi
+    e_old = object$state$errors
     e_new = matrix(NA, nrow = h, ncol = p)
   }
   
@@ -487,7 +494,7 @@ predict.SparseDFM <- function(x, h = 1, standardize = FALSE){
     F_new[i,] = A %*% F_old 
     X_new[i,] = F_new[i,] %*% t(Lambda)
     
-    if(x$data$err == 'AR1'){
+    if(object$data$err == 'AR1'){
       
       e_new[i,] = Phi %*% e_old
       X_new[i,] = X_new[i,] + e_new[i,]
@@ -502,20 +509,20 @@ predict.SparseDFM <- function(x, h = 1, standardize = FALSE){
   if(standardize){
     X_new = X_new
   }else{
-    X_new = kronecker(t(x$data$X.sd),rep(1,h))*X_new + kronecker(t(x$data$X.mean),rep(1,h))
+    X_new = kronecker(t(object$data$X.sd),rep(1,h))*X_new + kronecker(t(object$data$X.mean),rep(1,h))
   }
   
-  if(x$data$err == 'AR1'){
+  if(object$data$err == 'AR1'){
     output = list(X_hat = X_new,
                   F_hat = F_new,
                   e_hat = e_new,
                   h = h,
-                  err = x$data$err)
+                  err = object$data$err)
   }else{
     output = list(X_hat = X_new,
                   F_hat = F_new,
                   h = h,
-                  err = x$data$err)
+                  err = object$data$err)
   }
   
   class(output) <- "SparseDFM_forecast"
@@ -525,17 +532,18 @@ predict.SparseDFM <- function(x, h = 1, standardize = FALSE){
 
 
 #' @rdname predict.SparseDFM 
-#' @param y an object of class 'SparseDFM_forecast' from \code{predict.SparseDFM}.
+#' @param x an object of class 'SparseDFM_forecast' from \code{predict.SparseDFM}.
+#' @param \dots Further \code{print} arguments.
 #' @returns 
 #' Prints out the h-step ahead forecast from \code{predict.SparseDFM}.
 #' 
 #' @export
 
-print.SparseDFM_forecast <- function(y){
+print.SparseDFM_forecast <- function(x,...){
   
-  h = y$h
-  X_hat = y$X_hat
-  F_hat = y$F_hat
+  h = x$h
+  X_hat = x$X_hat
+  F_hat = x$F_hat
   
   cat('\n The', h, 'step ahead forecast for the data series are \n')
   print(X_hat)
@@ -543,9 +551,9 @@ print.SparseDFM_forecast <- function(y){
   cat('\n The', h, 'step ahead forecast for the factors are \n')
   print(F_hat)
   
-  if(y$err == 'AR1'){
+  if(x$err == 'AR1'){
     cat('\n The', h, 'step ahead forecast for the AR(1) idiosyncratic errors are \n')
-    print(y$e_hat)
+    print(x$e_hat)
   }
   
 }

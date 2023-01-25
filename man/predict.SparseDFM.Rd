@@ -5,18 +5,20 @@
 \alias{print.SparseDFM_forecast}
 \title{Forecasting factor estimates and data series.}
 \usage{
-\method{predict}{SparseDFM}(x, h = 1, standardize = FALSE)
+\method{predict}{SparseDFM}(object, h = 1, standardize = FALSE, ...)
 
-\method{print}{SparseDFM_forecast}(y)
+\method{print}{SparseDFM_forecast}(x, ...)
 }
 \arguments{
-\item{x}{an object of class 'SparseDFM'.}
+\item{object}{an object of class 'SparseDFM'.}
 
 \item{h}{integer. The number of steps ahead to compute the forecast for. Default is \eqn{h=1}{h=1}.}
 
 \item{standardize}{logical. Returns data series forecasts in the original data scale if set to \code{FALSE}. Default is \code{FALSE}.}
 
-\item{y}{an object of class 'SparseDFM_forecast' from \code{predict.SparseDFM}.}
+\item{\dots}{Further \code{print} arguments.}
+
+\item{x}{an object of class 'SparseDFM_forecast' from \code{predict.SparseDFM}.}
 }
 \value{
 X_hat \eqn{h \times p}{h x p} numeric matrix of data series forecasts.

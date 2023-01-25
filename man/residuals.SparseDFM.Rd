@@ -6,14 +6,16 @@
 \alias{resid.SparseDFM}
 \title{SparseDFM Residuals and Fitted Values}
 \usage{
-\method{fitted}{SparseDFM}(x, standardize = FALSE)
+\method{fitted}{SparseDFM}(object, standardize = FALSE, ...)
 
-\method{residuals}{SparseDFM}(x, standardize = FALSE)
+\method{residuals}{SparseDFM}(object, standardize = FALSE, ...)
 }
 \arguments{
-\item{x}{an object of class 'SparseDFM'.}
+\item{object}{an object of class 'SparseDFM'.}
 
 \item{standardize}{logical. The residuals and fitted values should be standardized. Default is \code{FALSE}, values returned in the original data \eqn{\bm{X}}{X} scale.}
+
+\item{\dots}{Further \code{residuals} arguments.}
 }
 \value{
 Residuals or fitted values of \code{SparseDFM}.

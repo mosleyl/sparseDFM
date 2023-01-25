@@ -5,12 +5,16 @@
 \alias{print.SparseDFM}
 \title{SparseDFM Summary Outputs}
 \usage{
-\method{print}{SparseDFM}(x)
+\method{print}{SparseDFM}(x, ...)
 
-\method{summary}{SparseDFM}(x)
+\method{summary}{SparseDFM}(object, ...)
 }
 \arguments{
 \item{x}{an object of class 'SparseDFM'}
+
+\item{\dots}{Further \code{summary} arguments.}
+
+\item{object}{an object of class 'SparseDFM'}
 }
 \value{
 Information on the model fitted.
