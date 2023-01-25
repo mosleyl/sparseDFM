@@ -117,6 +117,7 @@ summary.SparseDFM <- function(x){
 #' @importFrom Matrix Matrix image 
 #' @importFrom ggplot2 ggplot aes geom_segment theme_light scale_color_manual theme element_text element_blank xlab ylab ggtitle 
 #' @importFrom graphics par matplot lines box axis mtext boxplot plot 
+#' @importFrom reshape2 melt
 #' 
 #' @export 
 
@@ -355,7 +356,7 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     if(residual.type=='boxplot'){
     
-      data_long = reshape2::melt(resids)
+      data_long = melt(resids)
       
       data_long = data_long[,-1]
       
