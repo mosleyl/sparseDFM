@@ -233,13 +233,13 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     lw = Matrix::Matrix(trL[which.factors,which.series], sparse = TRUE)
     
     series.names = unlist(dimnames(x$params$Lambda)[1])
-    
+ 
     Matrix::image(lw, xlab = if(is.null(dots$xlab))'Series' else dots$xlab,
                   ylab = if(is.null(dots$ylab))'Factor' else dots$ylab, sub = NULL,
                   main = if(is.null(dots$main)) 'Loadings Heatmap' else dots$main,
                   colorkey = colorkey, col.regions = col.regions,
                   scales = list(y=list(at = 1:(length(which.factors)), labels = factor.lab),
-                                x=if(is.null(series.lab)) list(at = 1:(length(which.series)), labels = series.names, rot = 90) else list(at = series.labpos, labels = series.lab, rot = 90)))
+                                x=if(is.null(series.lab)){ list(at = 1:(length(which.series)), labels = if(!is.null(series.names)) series.names else which.series, rot = if(!is.null(series.names)) 90 else 0)} else {list(at = series.labpos, labels = series.lab, rot = 90)}))
     
     
   }
@@ -253,12 +253,12 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     dots <- list(...)
     
-    trL = t(x$params$Lambda)
-    lw = Matrix::Matrix(trL, sparse = TRUE)
+    lw = t(x$params$Lambda)
     
+    series.names = unlist(dimnames(x$params$Lambda)[1])
     
     data <- data.frame(
-      x=which.series,
+      x= if(!is.null(series.names)) series.names else which.series,
       y=as.numeric(lw[loading.factor, which.series])
     )
     
@@ -270,15 +270,16 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     
     # plot
-    ggplot(data, aes(x=x, y=y)) +
-      geom_segment( aes(x=x, xend=x, y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
+    ggplot(data, aes(x=factor(x, level = series.names), y=y)) +
+      geom_segment( aes(x=factor(x, level = series.names), xend=factor(x, level = series.names), y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
       theme_light() +
       scale_color_manual(breaks=unique_group_names,values = mycolors) +
       theme(
         legend.position = "none",
         panel.border = element_blank(),
-        text = element_text(size = 15),
-        axis.text = element_text(size = 15)
+        text = element_text(size = 10),
+        axis.text = element_text(size = 10),
+        axis.text.x = if(!is.null(series.names)) element_text(angle = 90, vjust = 0.5, hjust=1) else element_text(angle = NULL, vjust = NULL, hjust=NULL) 
       ) +
       xlab(if(is.null(dots$xlab))"Series"else dots$xlab) +
       ylab(if(is.null(dots$ylab))"Loading Value"else dots$ylab) + 
@@ -303,12 +304,12 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     dots <- list(...)
     
-    trL = t(x$params$Lambda)
-    lw = Matrix::Matrix(trL, sparse = TRUE)
+    lw = t(x$params$Lambda)
     
+    series.names = unlist(dimnames(x$params$Lambda)[1])
     
     data <- data.frame(
-      x=which.series,
+      x= if(!is.null(series.names)) series.names else which.series,
       y=as.numeric(lw[loading.factor, which.series])
     )
     
@@ -317,18 +318,19 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     unique_group_names = unique(group.names)
     
     mycolors = group.cols
-    
+  
     
     # plot
-    ggplot(data, aes(x=x, y=y)) +
-      geom_segment( aes(x=x, xend=x, y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
+    ggplot(data, aes(x=factor(x, level = series.names), y=y)) +
+      geom_segment( aes(x=factor(x, level = series.names), xend=factor(x, level = series.names), y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
       theme_light() +
       scale_color_manual(breaks=unique_group_names,values = mycolors) +
       theme(
         legend.position = if(group.legend) "right" else "none",
         panel.border = element_blank(),
-        text = element_text(size = 17),
-        axis.text = element_text(size = 17)
+        text = element_text(size = 10),
+        axis.text = element_text(size = 10),
+        axis.text.x = if(!is.null(series.names)) element_text(angle = 90, vjust = 0.5, hjust=1) else element_text(angle = NULL, vjust = NULL, hjust=NULL)
       ) +
       xlab(if(is.null(dots$xlab))"Series"else dots$xlab) +
       ylab(if(is.null(dots$ylab))"Loading Value"else dots$ylab) + 
@@ -347,27 +349,40 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     dots = list(...)
     
+    series.names = unlist(dimnames(x$params$Lambda)[1])
+    
     resids = x$data$X.bal - x$data$fitted
     
-    
     if(residual.type=='boxplot'){
+    
+      data_long = reshape2::melt(resids)
       
-      boxplot.series = sort(which.series)
+      data_long = data_long[,-1]
       
-      boxplot(resids[,boxplot.series], xlab = if(is.null(dots$xlab)) 'Series' else dots$xlab,
-              ylab = if(is.null(dots$ylab)) 'Value' else dots$ylab, 
-              main = if(is.null(dots$main)) paste('Boxplot of Residuals', scatter.series),
-              cex.axis = 1.2, cex.main = 1.2, cex.lab = 1.2, axes = FALSE)
-      box()
-      axis(1, at = 1:length(boxplot.series), labels = boxplot.series, xpd = NA)
-      axis(2, xpd = NA)
-      
+      # plot
+      ggplot(data_long, aes(x=Var2, y=value)) +
+        geom_boxplot() +
+        theme_light() +
+        theme(
+          legend.position = "none",
+          panel.border = element_blank(),
+          text = element_text(size = 10),
+          axis.text = element_text(size = 10),
+          axis.text.x = if(!is.null(series.names)) element_text(angle = 90, vjust = 0.5, hjust=1) else element_text(angle = NULL, vjust = NULL, hjust=NULL) 
+        ) +
+        xlab(if(is.null(dots$xlab))"Series"else dots$xlab) +
+        ylab(if(is.null(dots$ylab))"Loading Value"else dots$ylab) + 
+        ggtitle(if(is.null(dots$main))paste("Loadings for Factor", loading.factor) else dots$main)
     }else{
+      
+      s.names = unlist(dimnames(resids)[2])
+      scatter.series.name = if(!is.null(s.names)) s.names[scatter.series] else paste('Series',scatter.series)
       
       plot(resids[,scatter.series], xlab = if(is.null(dots$xlab)) 'Time' else dots$xlab,
            ylab = if(is.null(dots$ylab)) 'Value' else dots$ylab, 
-           main = if(is.null(dots$main)) paste('Residual Scatter Plot for Series', scatter.series),
-           cex.axis = 1.2, cex.main = 1.2, cex.lab = 1.2)
+           main = if(is.null(dots$main)) paste('Residual Scatter Plot for', scatter.series.name) else dots$main,
+           cex.axis = if(is.null(dots$cex.axis)) 1.2 else dots$cex.axis, cex.main = if(is.null(dots$cex.main)) 1.2 else dots$cex.main, cex.lab = if(is.null(dots$cex.lab)) 1.2 else dots$cex.lab, pch = if(is.null(dots$main)) 20 else dots$pch) 
+      
       
     }
     

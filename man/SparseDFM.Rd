@@ -72,10 +72,10 @@ A list-of-lists-like object of class 'SparseDFM' with the following elements:
 \item{\code{params}}{A list containing the estimated parameters of the model with the following elements:
 \tabular{llll}{
 \code{A} \tab\tab the \eqn{r \times r}{r x r} factor transition matrix. \cr\cr
-\code{Phi} \tab\tab the \eqn{p \times p}{p x p} diagonal matrix of AR(1) coefficients for the idiosyncratic errors. \cr\cr
+\code{Phi} \tab\tab the p-dimensional vector of AR(1) coefficients for the idiosyncratic errors. \cr\cr
 \code{Lambda} \tab\tab the \eqn{p \times r}{p x r} loadings matrix. \cr\cr
 \code{Sigma_u} \tab\tab the \eqn{r \times r}{r x r} factor transition error covariance matrix. \cr\cr
-\code{Sigma_epsilon} \tab\tab the \eqn{n \times n}{n x n} idiosyncratic error covariance matrix. \cr\cr
+\code{Sigma_epsilon} \tab\tab the p-dimensional vector of idiosyncratic error variances. As \eqn{\bm{\Sigma}_{\epsilon}}{\Sigma(\epsilon)} is assumed to be diagonal. \cr\cr
 }
 }
 \item{\code{state}}{A list containing the estimated states and state covariances with the following elements:

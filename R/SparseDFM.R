@@ -55,10 +55,10 @@
 #'  \item{\code{params}}{A list containing the estimated parameters of the model with the following elements:
 #'  \tabular{llll}{
 #'      \code{A} \tab\tab the \eqn{r \times r}{r x r} factor transition matrix. \cr\cr
-#'      \code{Phi} \tab\tab the \eqn{p \times p}{p x p} diagonal matrix of AR(1) coefficients for the idiosyncratic errors. \cr\cr
+#'      \code{Phi} \tab\tab the p-dimensional vector of AR(1) coefficients for the idiosyncratic errors. \cr\cr
 #'      \code{Lambda} \tab\tab the \eqn{p \times r}{p x r} loadings matrix. \cr\cr
 #'      \code{Sigma_u} \tab\tab the \eqn{r \times r}{r x r} factor transition error covariance matrix. \cr\cr
-#'      \code{Sigma_epsilon} \tab\tab the \eqn{n \times n}{n x n} idiosyncratic error covariance matrix. \cr\cr  
+#'      \code{Sigma_epsilon} \tab\tab the p-dimensional vector of idiosyncratic error variances. As \eqn{\bm{\Sigma}_{\epsilon}}{\Sigma(\epsilon)} is assumed to be diagonal. \cr\cr  
 #'      }
 #'  }
 #'  \item{\code{state}}{A list containing the estimated states and state covariances with the following elements:
@@ -183,11 +183,7 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         dimnames(fit_x) = dimnames(X)
         dimnames(fit_X) = dimnames(X)
         
-        errors.PCA = initialise$X.bal - factors.PCA %*% t(loadings.PCA)
-        
         dimnames(factors.PCA) = list(obs.names, factor.names)
-        dimnames(errors.PCA) = list(obs.names, series.names)
-      
       
         
     ## Output for PCA - depends on if err = 'AR1' or 'IID'
@@ -200,7 +196,6 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         Sigma_u = Sigma.u.tilde[1:r,1:r]
         Sigma_epsilon = Sigma.u.tilde[(r+1):k,(r+1):k]
         factors.cov = P0_0[1:r,1:r]
-        errors.cov = P0_0[(r+1):k,(r+1):k]
 
         dimnames(A) = list(factor.names,factor.names)
         dimnames(Phi) = list(series.names,series.names)
@@ -208,8 +203,7 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         dimnames(Sigma_u) = list(f.error.names, f.error.names)
         dimnames(Sigma_epsilon) = list(series.names, series.names)
         dimnames(factors.cov) = list(factor.names, factor.names)
-        dimnames(errors.cov) = list(series.names, series.names)
-        
+
         
         output = list(data = list(X = X.raw,
                                   standardize = standardize,
@@ -223,18 +217,28 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   err = err,
                                   call = match.call()),
                       params = list(A = A,
-                                    Phi = Phi,
+                                    Phi = diag(Phi),
                                     Lambda = Lambda,
                                     Sigma_u = Sigma_u,
-                                    Sigma_epsilon = Sigma_epsilon),
+                                    Sigma_epsilon = diag(Sigma_epsilon)),
                       state = list(factors = factors.PCA,
-                                   errors = errors.PCA,
-                                   factors.cov = factors.cov,
-                                   errors.cov = errors.cov))
+                                   factors.cov = factors.cov))
         
         
       }else {
         
+        A = A.tilde
+        Lambda = Lambda.tilde
+        Sigma_u = Sigma.u.tilde
+        Sigma_epsilon = Sigma.eta
+        factors.cov = P0_0[1:r,1:r]
+
+        dimnames(A) = list(factor.names,factor.names)
+        dimnames(Lambda) = list(series.names, factor.names)
+        dimnames(Sigma_u) = list(f.error.names, f.error.names)
+        dimnames(Sigma_epsilon) = list(series.names, series.names)
+        dimnames(factors.cov) = list(factor.names, factor.names)
+
         output = list(data = list(X = X.raw,
                                   standardize = standardize,
                                   X.mean = X.mean, 
@@ -246,12 +250,12 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   method = alg,
                                   err = err,
                                   call = match.call()),
-                      params = list(A = A.tilde,
-                                    Lambda = Lambda.tilde,
-                                    Sigma_u = Sigma.u.tilde,
-                                    Sigma_epsilon = Sigma.eta),
+                      params = list(A = A,
+                                    Lambda = Lambda,
+                                    Sigma_u = Sigma_u,
+                                    Sigma_epsilon = diag(Sigma_epsilon)),
                       state = list(factors = factors.PCA,
-                                   factors.cov = P0_0[1:r,1:r]))
+                                   factors.cov = factors.cov))
         
         
       }
@@ -294,11 +298,37 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
           fit_X = fit_x
         }
         
+        dimnames(fit_x) = dimnames(X)
+        dimnames(fit_X) = dimnames(X)
         
     ## Output for 2Stage - depends on if err = 'AR1' or 'IID'
     
       if(err == 'AR1'){
         
+        factors = state.KS[,1:r]
+        errors = state.KS[,(r+1):k]
+        
+        dimnames(factors) = list(obs.names, factor.names)
+        dimnames(errors) = list(obs.names, series.names)
+        
+        
+        
+        A = A.tilde[1:r,1:r]
+        Phi = A.tilde[(r+1):k,(r+1):k]
+        Lambda = Lambda.tilde[,1:r]
+        Sigma_u = Sigma.u.tilde[1:r,1:r]
+        Sigma_epsilon = Sigma.u.tilde[(r+1):k,(r+1):k]
+        factors.cov = covariance.KS[1:r,1:r,]
+        errors.cov = covariance.KS[(r+1):k,(r+1):k,]
+        
+        dimnames(A) = list(factor.names,factor.names)
+        dimnames(Phi) = list(series.names,series.names)
+        dimnames(Lambda) = list(series.names, factor.names)
+        dimnames(Sigma_u) = list(f.error.names, f.error.names)
+        dimnames(Sigma_epsilon) = list(series.names, series.names)
+        dimnames(factors.cov) = list(factor.names, factor.names)
+        dimnames(errors.cov) = list(series.names, series.names)
+        
         output = list(data = list(X = X.raw,
                                   standardize = standardize,
                                   X.mean = X.mean, 
@@ -310,20 +340,36 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   method = alg,
                                   err = err,
                                   call = match.call()),
-                      params = list(A = A.tilde[1:r,1:r],
-                                    Phi = A.tilde[(r+1):k,(r+1):k],
-                                    Lambda = Lambda.tilde[,1:r],
-                                    Sigma_u = Sigma.u.tilde[1:r,1:r],
-                                    Sigma_epsilon = Sigma.u.tilde[(r+1):k,(r+1):k]),
-                      state = list(factors = state.KS[,1:r],
-                                   errors = state.KS[,(r+1):k],
-                                   factors.cov = covariance.KS[1:r,1:r,],
-                                   errors.cov = covariance.KS[(r+1):k,(r+1):k,]))
+                      params = list(A = A,
+                                    Phi = diag(Phi),
+                                    Lambda = Lambda,
+                                    Sigma_u = Sigma_u,
+                                    Sigma_epsilon = diag(Sigma_epsilon)),
+                      state = list(factors = factors,
+                                   errors = errors,
+                                   factors.cov = factors.cov,
+                                   errors.cov = errors.cov))
                                    
         
         
       }else {
         
+        factors = state.KS
+
+        dimnames(factors) = list(obs.names, factor.names)
+
+        A = A.tilde
+        Lambda = Lambda.tilde
+        Sigma_u = Sigma.u.tilde
+        Sigma_epsilon = Sigma.eta
+        factors.cov = covariance.KS
+        
+        dimnames(A) = list(factor.names,factor.names)
+        dimnames(Lambda) = list(series.names, factor.names)
+        dimnames(Sigma_u) = list(f.error.names, f.error.names)
+        dimnames(Sigma_epsilon) = list(series.names, series.names)
+        dimnames(factors.cov) = list(factor.names, factor.names)
+        
         output = list(data = list(X = X.raw,
                                   standardize = standardize,
                                   X.mean = X.mean, 
@@ -335,12 +381,12 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   method = alg,
                                   err = err,
                                   call = match.call()),
-                      params = list(A = A.tilde,
-                                    Lambda = Lambda.tilde,
-                                    Sigma_u = Sigma.u.tilde,
-                                    Sigma_epsilon = Sigma.eta),
-                      state = list(factors.KS = state.KS,
-                                   factors.KS.cov = covariance.KS))
+                      params = list(A = A,
+                                    Lambda = Lambda,
+                                    Sigma_u = Sigma_u,
+                                    Sigma_epsilon = diag(Sigma_epsilon)),
+                      state = list(factors = factors,
+                                   factors.cov = factors.cov))
         
         
       }
@@ -404,9 +450,34 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         fit_X = fit_x
       }
       
+      dimnames(fit_x) = dimnames(X)
+      dimnames(fit_X) = dimnames(X)
+      
       ## Output for EM - depends on if err = 'AR1' or 'IID'
       
       if(err == 'AR1'){
+        
+        factors = state.EM[,1:r]
+        errors = state.EM[,(r+1):k]
+        
+        dimnames(factors) = list(obs.names, factor.names)
+        dimnames(errors) = list(obs.names, series.names)
+        
+        A = A.tilde[1:r,1:r]
+        Phi = A.tilde[(r+1):k,(r+1):k]
+        Lambda = Lambda.tilde[,1:r]
+        Sigma_u = Sigma.u.tilde[1:r,1:r]
+        Sigma_epsilon = Sigma.u.tilde[(r+1):k,(r+1):k]
+        factors.cov = covariance.EM[1:r,1:r,]
+        errors.cov = covariance.EM[(r+1):k,(r+1):k,]
+        
+        dimnames(A) = list(factor.names,factor.names)
+        dimnames(Phi) = list(series.names,series.names)
+        dimnames(Lambda) = list(series.names, factor.names)
+        dimnames(Sigma_u) = list(f.error.names, f.error.names)
+        dimnames(Sigma_epsilon) = list(series.names, series.names)
+        dimnames(factors.cov) = list(factor.names, factor.names)
+        dimnames(errors.cov) = list(series.names, series.names)
         
         output = list(data = list(X = X.raw,
                                   standardize = standardize,
@@ -419,15 +490,15 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   method = alg,
                                   err = err,
                                   call = match.call()),
-                      params = list(A = A.tilde[1:r,1:r],
-                                    Phi = A.tilde[(r+1):k,(r+1):k],
-                                    Lambda = Lambda.tilde[,1:r],
-                                    Sigma_u = Sigma.u.tilde[1:r,1:r],
-                                    Sigma_epsilon = Sigma.u.tilde[(r+1):k,(r+1):k]),
-                      state = list(factors = state.EM[,1:r],
-                                   errors = state.EM[,(r+1):k],
-                                   factors.cov = covariance.EM[1:r,1:r,],
-                                   errors.cov = covariance.EM[(r+1):k,(r+1):k,]),
+                      params = list(A = A,
+                                    Phi = diag(Phi),
+                                    Lambda = Lambda,
+                                    Sigma_u = Sigma_u,
+                                    Sigma_epsilon = diag(Sigma_epsilon)),
+                      state = list(factors = factors,
+                                   errors = errors,
+                                   factors.cov = factors.cov,
+                                   errors.cov = errors.cov),
                       em = list(converged = converged,
                                 loglik = loglik.store,
                                 num_iter = num_iter,
@@ -437,6 +508,22 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         
       }else {
         
+        factors = state.EM
+        
+        dimnames(factors) = list(obs.names, factor.names)
+        
+        A = A.tilde
+        Lambda = Lambda.tilde
+        Sigma_u = Sigma.u.tilde
+        Sigma_epsilon = Sigma.eta
+        factors.cov = covariance.EM
+        
+        dimnames(A) = list(factor.names,factor.names)
+        dimnames(Lambda) = list(series.names, factor.names)
+        dimnames(Sigma_u) = list(f.error.names, f.error.names)
+        dimnames(Sigma_epsilon) = list(series.names, series.names)
+        dimnames(factors.cov) = list(factor.names, factor.names)
+        
         output = list(data = list(X = X.raw,
                                   standardize = standardize,
                                   X.mean = X.mean, 
@@ -448,12 +535,12 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   method = alg,
                                   err = err,
                                   call = match.call()),
-                      params = list(A = A.tilde,
-                                    Lambda = Lambda.tilde,
-                                    Sigma_u = Sigma.u.tilde,
-                                    Sigma_epsilon = Sigma.eta),
-                      state = list(factors = state.EM,
-                                   factors.cov = covariance.EM),
+                      params = list(A = A,
+                                    Lambda = Lambda,
+                                    Sigma_u = Sigma_u,
+                                    Sigma_epsilon = diag(Sigma_epsilon)),
+                      state = list(factors = factors,
+                                   factors.cov = factors.cov),
                       em = list(converged = converged,
                                 loglik = loglik.store,
                                 num_iter = num_iter,
@@ -587,9 +674,34 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
           fit_X = fit_x
         }
         
+        dimnames(fit_x) = dimnames(X)
+        dimnames(fit_X) = dimnames(X)
+        
       ## Output for EM-sparse - depends on if err = 'AR1' or 'IID'
         
         if(err == 'AR1'){
+          
+          factors = state.EM[,1:r]
+          errors = state.EM[,(r+1):k]
+          
+          dimnames(factors) = list(obs.names, factor.names)
+          dimnames(errors) = list(obs.names, series.names)
+          
+          A = A.tilde[1:r,1:r]
+          Phi = A.tilde[(r+1):k,(r+1):k]
+          Lambda = Lambda.tilde[,1:r]
+          Sigma_u = Sigma.u.tilde[1:r,1:r]
+          Sigma_epsilon = Sigma.u.tilde[(r+1):k,(r+1):k]
+          factors.cov = covariance.EM[1:r,1:r,]
+          errors.cov = covariance.EM[(r+1):k,(r+1):k,]
+          
+          dimnames(A) = list(factor.names,factor.names)
+          dimnames(Phi) = list(series.names,series.names)
+          dimnames(Lambda) = list(series.names, factor.names)
+          dimnames(Sigma_u) = list(f.error.names, f.error.names)
+          dimnames(Sigma_epsilon) = list(series.names, series.names)
+          dimnames(factors.cov) = list(factor.names, factor.names)
+          dimnames(errors.cov) = list(series.names, series.names)
           
           output = list(data = list(X = X.raw,
                                     standardize = standardize,
@@ -602,15 +714,15 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                     method = alg,
                                     err = err,
                                     call = match.call()),
-                        params = list(A = A.tilde[1:r,1:r],
-                                      Phi = A.tilde[(r+1):k,(r+1):k],
-                                      Lambda = Lambda.tilde[,1:r],
-                                      Sigma_u = Sigma.u.tilde[1:r,1:r],
-                                      Sigma_epsilon = Sigma.u.tilde[(r+1):k,(r+1):k]),
-                        state = list(factors = state.EM[,1:r],
-                                     errors = state.EM[,(r+1):k],
-                                     factors.cov = covariance.EM[1:r,1:r,],
-                                     errors.cov = covariance.EM[(r+1):k,(r+1):k,]),
+                        params = list(A = A,
+                                      Phi = diag(Phi),
+                                      Lambda = Lambda,
+                                      Sigma_u = Sigma_u,
+                                      Sigma_epsilon = diag(Sigma_epsilon)),
+                        state = list(factors = factors,
+                                     errors = errors,
+                                     factors.cov = factors.cov,
+                                     errors.cov = errors.cov),
                         em = list(converged = converged,
                                   alpha_grid = alphas.used,
                                   alpha_opt = best.alpha,
@@ -623,6 +735,22 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
           
         }else {
           
+          factors = state.EM
+          
+          dimnames(factors) = list(obs.names, factor.names)
+          
+          A = A.tilde
+          Lambda = Lambda.tilde
+          Sigma_u = Sigma.u.tilde
+          Sigma_epsilon = Sigma.eta
+          factors.cov = covariance.EM
+          
+          dimnames(A) = list(factor.names,factor.names)
+          dimnames(Lambda) = list(series.names, factor.names)
+          dimnames(Sigma_u) = list(f.error.names, f.error.names)
+          dimnames(Sigma_epsilon) = list(series.names, series.names)
+          dimnames(factors.cov) = list(factor.names, factor.names)
+          
           output = list(data = list(X = X.raw,
                                     standardize = standardize,
                                     X.mean = X.mean, 
@@ -634,12 +762,12 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                     method = alg,
                                     err = err,
                                     call = match.call()),
-                        params = list(A = A.tilde,
-                                      Lambda = Lambda.tilde,
-                                      Sigma_u = Sigma.u.tilde,
-                                      Sigma_epsilon = Sigma.eta),
-                        state = list(factors = state.EM,
-                                     factors.cov = covariance.EM),
+                        params = list(A = A,
+                                      Lambda = Lambda,
+                                      Sigma_u = Sigma_u,
+                                      Sigma_epsilon = diag(Sigma_epsilon)),
+                        state = list(factors = factors,
+                                     factors.cov = factors.cov),
                         em = list(converged = converged,
                                   alpha_grid = alphas.used,
                                   alpha_opt = best.alpha,
