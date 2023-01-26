@@ -39,8 +39,8 @@ inline arma::mat symmat(const arma::mat& P) {
 //' @import Rcpp
 //' @export
 // [[Rcpp::export]]
-List kalmanCpp(const arma::mat& X, const arma::mat& a0_0, const arma::mat& P0_0, const arma::mat& A,
-               const arma::mat& Lambda, const arma::mat& Sig_e, const arma::mat& Sig_u) {
+List kalmanMultivariate(const arma::mat& X, const arma::mat& a0_0, const arma::mat& P0_0, const arma::mat& A,
+						const arma::mat& Lambda, const arma::mat& Sig_e, const arma::mat& Sig_u) {
 
   // Initialise
   const arma::uword n = X.n_rows;

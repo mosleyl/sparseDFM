@@ -36,8 +36,8 @@ fastLambda <- function(D, C) {
 #'
 #' @import Rcpp
 #' @export
-kalmanCpp <- function(X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u) {
-    .Call(`_sparseDFM_kalmanCpp`, X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u)
+kalmanMultivariate <- function(X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u) {
+    .Call(`_sparseDFM_kalmanMultivariate`, X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u)
 }
 
 #' Univariate filtering (sequential processing) for fast KFS

@@ -23,9 +23,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// kalmanCpp
-List kalmanCpp(const arma::mat& X, const arma::mat& a0_0, const arma::mat& P0_0, const arma::mat& A, const arma::mat& Lambda, const arma::mat& Sig_e, const arma::mat& Sig_u);
-RcppExport SEXP _sparseDFM_kalmanCpp(SEXP XSEXP, SEXP a0_0SEXP, SEXP P0_0SEXP, SEXP ASEXP, SEXP LambdaSEXP, SEXP Sig_eSEXP, SEXP Sig_uSEXP) {
+// kalmanMultivariate
+List kalmanMultivariate(const arma::mat& X, const arma::mat& a0_0, const arma::mat& P0_0, const arma::mat& A, const arma::mat& Lambda, const arma::mat& Sig_e, const arma::mat& Sig_u);
+RcppExport SEXP _sparseDFM_kalmanMultivariate(SEXP XSEXP, SEXP a0_0SEXP, SEXP P0_0SEXP, SEXP ASEXP, SEXP LambdaSEXP, SEXP Sig_eSEXP, SEXP Sig_uSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -36,7 +36,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type Lambda(LambdaSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type Sig_e(Sig_eSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type Sig_u(Sig_uSEXP);
-    rcpp_result_gen = Rcpp::wrap(kalmanCpp(X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u));
+    rcpp_result_gen = Rcpp::wrap(kalmanMultivariate(X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -97,7 +97,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_sparseDFM_fastLambda", (DL_FUNC) &_sparseDFM_fastLambda, 2},
-    {"_sparseDFM_kalmanCpp", (DL_FUNC) &_sparseDFM_kalmanCpp, 7},
+    {"_sparseDFM_kalmanMultivariate", (DL_FUNC) &_sparseDFM_kalmanMultivariate, 7},
     {"_sparseDFM_kalmanUnivariate", (DL_FUNC) &_sparseDFM_kalmanUnivariate, 7},
     {"_sparseDFM_softThreshScalar", (DL_FUNC) &_sparseDFM_softThreshScalar, 2},
     {"_sparseDFM_softThreshMatrix", (DL_FUNC) &_sparseDFM_softThreshMatrix, 2},
