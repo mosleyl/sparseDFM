@@ -32,7 +32,7 @@ inline arma::mat symmat(const arma::mat& P) {
 //' @return Pt_tlag_n \eqn{k \times k \times n}{k x k x n}, smoothed state covariance with lag
 //'
 //' @references 
-//' Mosley, L., Chan, TS., & Gibberd, A. (2023). SparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings.
+//' Mosley, L., Chan, TS., & Gibberd, A. (2023). sparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings.
 //' 
 //' Shumway, R. H., & Stoffer, D. S. (1982). An approach to time series smoothing and forecasting using the EM algorithm. \emph{Journal of time series analysis, 3}(4), 253-264.
 //'

@@ -13,9 +13,9 @@
 initPCA <- function(X,r,err='IID') {
   
   # interpolate the missing data in X 
-  fillNA = fill_NA(X)
-  X.balanced<- fillNA$X
-  X.NAidx <- fillNA$idx.na
+  fill.NA = fillNA(X)
+  X.balanced<- fill.NA$X
+  X.NAidx <- fill.NA$idx.na
   
   n <- dim(X.balanced)[1] # n observations 
   p <- dim(X.balanced)[2] # p time series 

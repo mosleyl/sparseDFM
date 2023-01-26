@@ -1,5 +1,5 @@
-Package: SparseDFM
-Title: SparseDFM: An R Package To Estimate Dynamic Factor Models With Sparse Loadings
+Package: sparseDFM
+Title: sparseDFM: An R Package To Estimate Dynamic Factor Models With Sparse Loadings
 Version: 0.0.0.9000
 Authors@R: 
     c(person("Luke", "Mosley", , "l.mosley@lancaster.ac.uk", role = c("aut"),

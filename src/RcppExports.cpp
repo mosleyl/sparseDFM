@@ -13,7 +13,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // fastLambda
 arma::mat fastLambda(const arma::cube& D, const arma::mat& C);
-RcppExport SEXP _SparseDFM_fastLambda(SEXP DSEXP, SEXP CSEXP) {
+RcppExport SEXP _sparseDFM_fastLambda(SEXP DSEXP, SEXP CSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,7 +25,7 @@ END_RCPP
 }
 // kalmanCpp
 List kalmanCpp(const arma::mat& X, const arma::mat& a0_0, const arma::mat& P0_0, const arma::mat& A, const arma::mat& Lambda, const arma::mat& Sig_e, const arma::mat& Sig_u);
-RcppExport SEXP _SparseDFM_kalmanCpp(SEXP XSEXP, SEXP a0_0SEXP, SEXP P0_0SEXP, SEXP ASEXP, SEXP LambdaSEXP, SEXP Sig_eSEXP, SEXP Sig_uSEXP) {
+RcppExport SEXP _sparseDFM_kalmanCpp(SEXP XSEXP, SEXP a0_0SEXP, SEXP P0_0SEXP, SEXP ASEXP, SEXP LambdaSEXP, SEXP Sig_eSEXP, SEXP Sig_uSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -42,7 +42,7 @@ END_RCPP
 }
 // kalmanUnivariate
 List kalmanUnivariate(const arma::mat& X, const arma::mat& a0_0, const arma::mat& P0_0, const arma::mat& A, const arma::mat& Lambda, const arma::mat& Sig_e, const arma::mat& Sig_u);
-RcppExport SEXP _SparseDFM_kalmanUnivariate(SEXP XSEXP, SEXP a0_0SEXP, SEXP P0_0SEXP, SEXP ASEXP, SEXP LambdaSEXP, SEXP Sig_eSEXP, SEXP Sig_uSEXP) {
+RcppExport SEXP _sparseDFM_kalmanUnivariate(SEXP XSEXP, SEXP a0_0SEXP, SEXP P0_0SEXP, SEXP ASEXP, SEXP LambdaSEXP, SEXP Sig_eSEXP, SEXP Sig_uSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -59,7 +59,7 @@ END_RCPP
 }
 // softThreshScalar
 arma::mat softThreshScalar(const arma::mat& X, const double thresh);
-RcppExport SEXP _SparseDFM_softThreshScalar(SEXP XSEXP, SEXP threshSEXP) {
+RcppExport SEXP _sparseDFM_softThreshScalar(SEXP XSEXP, SEXP threshSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -71,7 +71,7 @@ END_RCPP
 }
 // softThreshMatrix
 arma::mat softThreshMatrix(const arma::mat& X, const arma::mat& thresh);
-RcppExport SEXP _SparseDFM_softThreshMatrix(SEXP XSEXP, SEXP threshSEXP) {
+RcppExport SEXP _sparseDFM_softThreshMatrix(SEXP XSEXP, SEXP threshSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -83,7 +83,7 @@ END_RCPP
 }
 // solveCube
 arma::cube solveCube(const arma::cube& A, const arma::mat& B, const double nu);
-RcppExport SEXP _SparseDFM_solveCube(SEXP ASEXP, SEXP BSEXP, SEXP nuSEXP) {
+RcppExport SEXP _sparseDFM_solveCube(SEXP ASEXP, SEXP BSEXP, SEXP nuSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -96,16 +96,16 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_SparseDFM_fastLambda", (DL_FUNC) &_SparseDFM_fastLambda, 2},
-    {"_SparseDFM_kalmanCpp", (DL_FUNC) &_SparseDFM_kalmanCpp, 7},
-    {"_SparseDFM_kalmanUnivariate", (DL_FUNC) &_SparseDFM_kalmanUnivariate, 7},
-    {"_SparseDFM_softThreshScalar", (DL_FUNC) &_SparseDFM_softThreshScalar, 2},
-    {"_SparseDFM_softThreshMatrix", (DL_FUNC) &_SparseDFM_softThreshMatrix, 2},
-    {"_SparseDFM_solveCube", (DL_FUNC) &_SparseDFM_solveCube, 3},
+    {"_sparseDFM_fastLambda", (DL_FUNC) &_sparseDFM_fastLambda, 2},
+    {"_sparseDFM_kalmanCpp", (DL_FUNC) &_sparseDFM_kalmanCpp, 7},
+    {"_sparseDFM_kalmanUnivariate", (DL_FUNC) &_sparseDFM_kalmanUnivariate, 7},
+    {"_sparseDFM_softThreshScalar", (DL_FUNC) &_sparseDFM_softThreshScalar, 2},
+    {"_sparseDFM_softThreshMatrix", (DL_FUNC) &_sparseDFM_softThreshMatrix, 2},
+    {"_sparseDFM_solveCube", (DL_FUNC) &_sparseDFM_solveCube, 3},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_SparseDFM(DllInfo *dll) {
+RcppExport void R_init_sparseDFM(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

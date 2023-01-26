@@ -1,14 +1,14 @@
-#' @name summary.SparseDFM
-#' @aliases print.SparseDFM
-#' @aliases summary.SparseDFM
+#' @name summary.sparseDFM
+#' @aliases print.sparseDFM
+#' @aliases summary.sparseDFM
 #' 
 #' @title
-#' SparseDFM Summary Outputs 
+#' sparseDFM Summary Outputs 
 #' 
 #' @description 
-#' Summary and print outputs for class 'SparseDFM'.
+#' Summary and print outputs for class 'sparseDFM'.
 #' 
-#' @param x an object of class 'SparseDFM'
+#' @param x an object of class 'sparseDFM'
 #' @param \dots Further \code{print} arguments. 
 #' 
 #' @returns 
@@ -16,7 +16,7 @@
 #' 
 #' @export
 
-print.SparseDFM <- function(x,...){
+print.sparseDFM <- function(x,...){
   
   X = x$data$X
   A = x$params$A
@@ -39,15 +39,15 @@ print.SparseDFM <- function(x,...){
   
 }
 
-#' @rdname summary.SparseDFM
-#' @param object an object of class 'SparseDFM'
+#' @rdname summary.sparseDFM
+#' @param object an object of class 'sparseDFM'
 #' @param \dots Further \code{summary} arguments.
 #' @returns 
 #' Summary information on estimation details. 
 #' 
 #' @export
 
-summary.SparseDFM <- function(object,...){
+summary.sparseDFM <- function(object,...){
     
   X = object$data$X
   A = object$params$A
@@ -80,19 +80,20 @@ summary.SparseDFM <- function(object,...){
 
 
 #' @title 
-#' SparseDFM Plot Outputs 
+#' sparseDFM Plot Outputs 
 #' 
 #' @description 
-#' Make plots for the output of SparseDFM(). Options include:
+#' Make plots for the output of sparseDFM(). Options include:
 #' \itemize{
 #' \item \code{factor} - plot factor estimate series on top of the original standardized stationary data
 #' \item \code{loading.heatmap} - make a heatmap of the loadings matrix
 #' \item \code{loading.lineplot} - make a lineplot of variable loadings for a given factor
 #' \item \code{loading.grouplineplot} - separate variable groups into colours for better visualisation 
 #' \item \code{residual} - boxplot or scatterplot of residuals 
+#' \item \code{lasso.bic} - BIC values for the LASSO tuning parameter
 #' }
 #' 
-#' @param x an object of class 'SparseDFM'.
+#' @param x an object of class 'sparseDFM'.
 #' @param type character. The type of plot: \code{"factor"}, \code{"loading.heatmap"}, \code{"loading.lineplot"}, \code{"loading.grouplineplot"} or \code{"residual"}. Default is \code{"factor"}.
 #' @param which.factors numeric vector of integers representing which factors should be plotted in \code{"factor"} and \code{"loading.heatmap"}. Default is \code{which.factors}=\code{1:(dim(x$state$factors)[2])}, plotting them all. Accepts a single integer if just one factor required. 
 #' @param scale.factors logical. Standardize the factor estimates when plotting in \code{"factor"}. Default is \code{TRUE}.
@@ -111,24 +112,25 @@ summary.SparseDFM <- function(object,...){
 #' @param group.legend logical. Display the legend. Default is \code{TRUE}.
 #' @param residual.type character. The type of residual plot: \code{"boxplot"} or \code{"scatterplot"}. Default is \code{"boxplot"}.
 #' @param scatter.series integer. The series to plot when \code{residual.type} = \code{"scatterplot"}. Default is series 1. 
-#' @param \dots for \code{plot.SparseDFM}. Further plot arguments. 
+#' @param min.bic.col character. Colour for the best \eqn{\alpha}{\alpha} point. Default is \code{'red'}.
+#' @param \dots for \code{plot.sparseDFM}. Further plot arguments. 
 #' 
 #' @returns 
-#' Plots for the output of SparseDFM().
+#' Plots for the output of sparseDFM().
 #' 
 #' @importFrom Matrix Matrix image 
 #' @importFrom ggplot2 ggplot aes geom_segment theme_light scale_color_manual theme element_text element_blank xlab ylab ggtitle geom_boxplot
-#' @importFrom graphics par matplot lines box axis mtext boxplot plot 
+#' @importFrom graphics par matplot lines box axis mtext boxplot plot abline
 #' @importFrom reshape2 melt
 #' 
 #' @export 
 
 
-plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$factors)[2]), scale.factors = TRUE, 
+plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$factors)[2]), scale.factors = TRUE, 
                            which.series = 1:(dim(x$params$Lambda)[1]), loading.factor = 1, series.col = 'grey',
                            factor.col = 'black', factor.lwd = 2, factor.lab = NULL, series.lab = NULL, series.labpos = NULL,
                            colorkey = TRUE, col.regions = NULL, group.names = NULL, group.cols = NULL, 
-                           group.legend = TRUE, residual.type = 'boxplot', scatter.series = 1, ...){
+                           group.legend = TRUE, residual.type = 'boxplot', scatter.series = 1, min.bic.col = 'red', ...){
   
   # global variable declaration 
   y = Group = Var2 = value = NULL
@@ -344,7 +346,7 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
   
   ## type = 'residual'
   
-  else{
+  else if(type == 'resdiual'){
     
     if(residual.type == 'scatter' && is.null(scatter.series)) stop("No series chosen in scatter.series")
     
@@ -392,31 +394,49 @@ plot.SparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
   }
   
+  ## type = 'lasso.bic'
+  else{
+    
+    par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
+    par(mfrow = c(1,1))
+    
+    dots = list(...)
+    
+    
+    mycols = rep(if(is.null(dots$col)) 'black' else dots$col, length(x$em$alpha_grid))
+    mycols[which.min(x$em$bic)] = min.bic.col
+    
+    plot(log10(x$em$alpha_grid),x$em$bic, type = if(is.null(dots$type)) 'o' else dots$type, pch = if(is.null(dots$pch)) 20 else dots$pch, col = mycols, xlab =  if(is.null(dots$xlab)) expression(paste("log10(", alpha,')')) else dots$xlab, ylab = if(is.null(dots$ylab)) 'BIC' else dots$ylab, main = if(is.null(dots$main)) 'BIC Values for the LASSO Tuning Parameter' else dots$main)
+    
+    abline(v=log10(x$em$alpha_opt), col = min.bic.col, lty = 'dashed')
+    
+  }
+  
 }
 
 
-#' @name residuals.SparseDFM
-#' @aliases residuals.SparseDFM
-#' @aliases resid.SparseDFM
-#' @aliases fitted.SparseDFM
+#' @name residuals.sparseDFM
+#' @aliases residuals.sparseDFM
+#' @aliases resid.sparseDFM
+#' @aliases fitted.sparseDFM
 #' 
 #' @title 
-#' SparseDFM Residuals and Fitted Values 
+#' sparseDFM Residuals and Fitted Values 
 #' 
 #' @description 
-#' Obtain the residuals or fitted values of the \code{SparseDFM} fit. 
+#' Obtain the residuals or fitted values of the \code{sparseDFM} fit. 
 #' 
-#' @param object an object of class 'SparseDFM'.
+#' @param object an object of class 'sparseDFM'.
 #' @param standardize logical. The residuals and fitted values should be standardized. Default is \code{FALSE}, values returned in the original data \eqn{\bm{X}}{X} scale.
 #' @param \dots Further \code{fitted} arguments.
 #' 
-#' @return Residuals or fitted values of \code{SparseDFM}.
+#' @return Residuals or fitted values of \code{sparseDFM}.
 #' 
-#' @rdname residuals.SparseDFM
+#' @rdname residuals.sparseDFM
 #' @export
 
 
-fitted.SparseDFM <- function(object, standardize = FALSE,...){
+fitted.sparseDFM <- function(object, standardize = FALSE,...){
   
   if(standardize){
     return(object$data$fitted)
@@ -427,15 +447,15 @@ fitted.SparseDFM <- function(object, standardize = FALSE,...){
 }
 
 
-#' @rdname residuals.SparseDFM
+#' @rdname residuals.sparseDFM
 #' 
-#' @param object an object of class 'SparseDFM'.
+#' @param object an object of class 'sparseDFM'.
 #' @param standardize logical. The residuals and fitted values should be standardized. Default is \code{FALSE}, values returned in the original data \eqn{\bm{X}}{X} scale.
 #' @param \dots Further \code{residuals} arguments.
 #' 
 #' @export
 
-residuals.SparseDFM <- function(object, standardize = FALSE,...){
+residuals.sparseDFM <- function(object, standardize = FALSE,...){
   
   if(standardize){
     res = object$data$X.bal - object$data$fitted
@@ -448,9 +468,9 @@ residuals.SparseDFM <- function(object, standardize = FALSE,...){
   
 }
 
-#' @name predict.SparseDFM
-#' @aliases predict.SparseDFM
-#' @aliases print.SparseDFM_forecast
+#' @name predict.sparseDFM
+#' @aliases predict.sparseDFM
+#' @aliases print.sparseDFM_forecast
 #' 
 #' @title 
 #' Forecasting factor estimates and data series. 
@@ -458,20 +478,20 @@ residuals.SparseDFM <- function(object, standardize = FALSE,...){
 #' @description 
 #' Predict the next h steps ahead for the factor estimates and the data series. Given information up to time \eqn{t}{t}, a h-step ahead forecast is \eqn{\bm{X}_{t+h}=\bm{\Lambda}\bm{A}^{h}\bm{F}_t+\bm{\Phi}^h\bm{\epsilon}_t}{X_{t+h}=\Lambda A^h F_t+\Phi^h \epsilon_t}, where \eqn{\bm{\Phi}=0}{\Phi = 0} for the IID idiosyncratic error case.
 #' 
-#' @param object an object of class 'SparseDFM'.
+#' @param object an object of class 'sparseDFM'.
 #' @param h integer. The number of steps ahead to compute the forecast for. Default is \eqn{h=1}{h=1}.
 #' @param standardize logical. Returns data series forecasts in the original data scale if set to \code{FALSE}. Default is \code{FALSE}. 
 #' @param \dots Further \code{predict} arguments.
 #' 
 #' @return X_hat \eqn{h \times p}{h x p} numeric matrix of data series forecasts.
 #' @return F_hat \eqn{h \times r}{h x r} numeric matrix of factor forecasts.
-#' @return e_hat \eqn{h \times p}{h x p} numeric matrix of AR(1) idiosyncratic error forecasts if \code{err}=\code{AR1} in \code{SparseDFM}.
+#' @return e_hat \eqn{h \times p}{h x p} numeric matrix of AR(1) idiosyncratic error forecasts if \code{err}=\code{AR1} in \code{sparseDFM}.
 #' @return h forecasts produced for h steps ahead.
-#' @return err the type of idiosyncratic errors used in \code{SparseDFM}.
+#' @return err the type of idiosyncratic errors used in \code{sparseDFM}.
 #' 
 #' @export
 
-predict.SparseDFM <- function(object, h = 1, standardize = FALSE,...){
+predict.sparseDFM <- function(object, h = 1, standardize = FALSE,...){
   
   A = object$params$A
   Lambda = object$params$Lambda
@@ -525,21 +545,21 @@ predict.SparseDFM <- function(object, h = 1, standardize = FALSE,...){
                   err = object$data$err)
   }
   
-  class(output) <- "SparseDFM_forecast"
+  class(output) <- "sparseDFM_forecast"
   return(output)
   
 }
 
 
-#' @rdname predict.SparseDFM 
-#' @param x an object of class 'SparseDFM_forecast' from \code{predict.SparseDFM}.
+#' @rdname predict.sparseDFM 
+#' @param x an object of class 'sparseDFM_forecast' from \code{predict.sparseDFM}.
 #' @param \dots Further \code{print} arguments.
 #' @returns 
-#' Prints out the h-step ahead forecast from \code{predict.SparseDFM}.
+#' Prints out the h-step ahead forecast from \code{predict.sparseDFM}.
 #' 
 #' @export
 
-print.SparseDFM_forecast <- function(x,...){
+print.sparseDFM_forecast <- function(x,...){
   
   h = x$h
   X_hat = x$X_hat

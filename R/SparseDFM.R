@@ -36,14 +36,14 @@
 #' @details 
 #' For full details of the model please refer to Mosley et al. (2023).
 #'  
-#' @returns A list-of-lists-like object of class 'SparseDFM' with the following elements:
+#' @returns A list-of-lists-like object of class 'sparseDFM' with the following elements:
 #'  \item{\code{data}}{A list containing information about the data with the following elements:
 #'  \tabular{llll}{
 #'      \code{X} \tab\tab is the original \eqn{n \times p}{n x p} numeric data matrix of (stationary) time series. \cr\cr
 #'      \code{standardize} \tab\tab is a logical value indicating whether the original data was standardized.\cr\cr
 #'      \code{X.mean} \tab\tab is a p-dimensional numeric vector of column means of \eqn{X}.  \cr\cr
 #'      \code{X.sd} \tab\tab is a p-dimensional numeric vector of column standard deviations of \eqn{X}.  \cr\cr
-#'      \code{X.bal} \tab\tab is a \eqn{n \times p}{n x p} numeric data matrix of the original \eqn{X} with missing data interpolated using \code{fill_NA()}. \cr\cr
+#'      \code{X.bal} \tab\tab is a \eqn{n \times p}{n x p} numeric data matrix of the original \eqn{X} with missing data interpolated using \code{fillNA()}. \cr\cr
 #'      \code{eigen} \tab\tab is the eigen decomposition of \code{X.bal}. \cr\cr 
 #'      \code{fitted} \tab\tab is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. \cr\cr
 #'      \code{fitted.unscaled} is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. This has been unscaled back to original data scale if \code{standardize} is \code{TRUE}. \cr\cr
@@ -91,17 +91,17 @@
 #' 
 #' Koopman, S. J., & Durbin, J. (2000). Fast filtering and smoothing for multivariate state space models. \emph{Journal of Time Series Analysis, 21}(3), 281-296. 
 #' 
-#' Mosley, L., Chan, TS., & Gibberd, A. (2023). SparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings.  
+#' Mosley, L., Chan, TS., & Gibberd, A. (2023). sparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings.  
 #' 
 #' Shumway, R. H., & Stoffer, D. S. (1982). An approach to time series smoothing and forecasting using the EM algorithm. \emph{Journal of time series analysis, 3}(4), 253-264.
 #' 
 #' Stock, J. H., & Watson, M. W. (2002). Forecasting using principal components from a large number of predictors. \emph{Journal of the American statistical association, 97}(460), 1167-1179.  
 #'  
-#' @useDynLib SparseDFM, .registration = TRUE
+#' @useDynLib sparseDFM, .registration = TRUE
 #'  
 #' @export
 
-SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse', err = 'IID', kalman = 'univariate', standardize = TRUE, max_iter=100, threshold=1e-4) {
+sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse', err = 'IID', kalman = 'univariate', standardize = TRUE, max_iter=100, threshold=1e-4) {
   
   
   ## Correct input checks
@@ -260,7 +260,7 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         
       }
         
-      class(output) <- 'SparseDFM'
+      class(output) <- 'sparseDFM'
       return(output)
         
   }else if(alg == '2Stage'){          # 2 stage algorithm applied (Doz, 2011)
@@ -391,7 +391,7 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         
       }
         
-      class(output) <- 'SparseDFM'
+      class(output) <- 'sparseDFM'
       return(output)
       
   }else if(alg == 'EM'){             # EM algorithm applied (Banbura and Modugno, 2014)
@@ -550,7 +550,7 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         
       }
 
-      class(output) <- 'SparseDFM'
+      class(output) <- 'sparseDFM'
       return(output)
     
   }else {         # sparse EM algorithm applied (Mosley et al, 2022)
@@ -632,7 +632,7 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
 
           # calculate BIC 
             
-            bic[alphas.index] = bic_function(X, t(KFS$at_n[1:r,]), Lambda.tilde[,1:r])
+            bic[alphas.index] = bicFunction(X, t(KFS$at_n[1:r,]), Lambda.tilde[,1:r])
           
           
           # store estimates if BIC improved 
@@ -780,7 +780,7 @@ SparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
           
         }
         
-        class(output) <- 'SparseDFM'
+        class(output) <- 'sparseDFM'
         return(output)
     
   }

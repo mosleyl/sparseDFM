@@ -3,7 +3,7 @@
 
 #' @import Rcpp
 fastLambda <- function(D, C) {
-    .Call(`_SparseDFM_fastLambda`, D, C)
+    .Call(`_sparseDFM_fastLambda`, D, C)
 }
 
 #' Classic Multivariate KFS Equations
@@ -30,14 +30,14 @@ fastLambda <- function(D, C) {
 #' @return Pt_tlag_n \eqn{k \times k \times n}{k x k x n}, smoothed state covariance with lag
 #'
 #' @references 
-#' Mosley, L., Chan, TS., & Gibberd, A. (2023). SparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings.
+#' Mosley, L., Chan, TS., & Gibberd, A. (2023). sparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings.
 #' 
 #' Shumway, R. H., & Stoffer, D. S. (1982). An approach to time series smoothing and forecasting using the EM algorithm. \emph{Journal of time series analysis, 3}(4), 253-264.
 #'
 #' @import Rcpp
 #' @export
 kalmanCpp <- function(X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u) {
-    .Call(`_SparseDFM_kalmanCpp`, X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u)
+    .Call(`_sparseDFM_kalmanCpp`, X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u)
 }
 
 #' Univariate filtering (sequential processing) for fast KFS
@@ -68,25 +68,25 @@ kalmanCpp <- function(X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u) {
 #' @references 
 #' Koopman, S. J., & Durbin, J. (2000). Fast filtering and smoothing for multivariate state space models. \emph{Journal of Time Series Analysis, 21}(3), 281-296.
 #'
-#' Mosley, L., Chan, TS., & Gibberd, A. (2023). SparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings.
+#' Mosley, L., Chan, TS., & Gibberd, A. (2023). sparseDFM: An R Package to Estimate Dynamic Factor Models with Sparse Loadings.
 #'
 #' @export
 kalmanUnivariate <- function(X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u) {
-    .Call(`_SparseDFM_kalmanUnivariate`, X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u)
+    .Call(`_sparseDFM_kalmanUnivariate`, X, a0_0, P0_0, A, Lambda, Sig_e, Sig_u)
 }
 
 #' @import Rcpp
 softThreshScalar <- function(X, thresh) {
-    .Call(`_SparseDFM_softThreshScalar`, X, thresh)
+    .Call(`_sparseDFM_softThreshScalar`, X, thresh)
 }
 
 #' @import Rcpp
 softThreshMatrix <- function(X, thresh) {
-    .Call(`_SparseDFM_softThreshMatrix`, X, thresh)
+    .Call(`_sparseDFM_softThreshMatrix`, X, thresh)
 }
 
 #' @import Rcpp
 solveCube <- function(A, B, nu = 0.0) {
-    .Call(`_SparseDFM_solveCube`, A, B, nu)
+    .Call(`_sparseDFM_solveCube`, A, B, nu)
 }
 
