@@ -334,18 +334,10 @@ EM <- function(X, a0_0, P0_0, A.tilde, Lambda.tilde, Sigma.eta, Sigma.u.tilde, a
       Sig_e = diag(diag(Sig_e))
       
       Sigma.eta = Sig_e
-      
-      if(any(diag(Sigma.eta)<0.001)){
-        converged = TRUE 
-        previous_loglik <- loglik
-        loglik.store[num_iter] = loglik 
-      }else{
-        ## Check convergence
-        
-        converged <- emConverged(loglik, previous_loglik, threshold)
-        previous_loglik <- loglik
-        loglik.store[num_iter] = loglik 
-      }
+
+      converged <- emConverged(loglik, previous_loglik, threshold)
+      previous_loglik <- loglik
+      loglik.store[num_iter] = loglik
       
     }
     

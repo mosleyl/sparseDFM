@@ -9,14 +9,15 @@ transformData(X, stationary_transform)
 \arguments{
 \item{X}{n x p numeric data matrix}
 
-\item{stationary_transform}{p-dimensional vector filled with numbers from \eqn{\{1,2,3,4,5,6\}}{\{1,2,3,4,5,6\}} representing:
+\item{stationary_transform}{p-dimensional vector filled with numbers from \eqn{\{1,2,3,4,5,6,7\}}{\{1,2,3,4,5,6,7\}} representing:
 \tabular{llll}{
-\code{1} \tab\tab first difference \eqn{X_{i,t} - X_{i,t-1}}{X_{i,t} - X_{i,t-1}} \cr\cr
-\code{2} \tab\tab second difference \eqn{(X_{i,t} - X_{i,t-1}) - (X_{i,t-1} - X_{i,t-2})}{(X_{i,t} - X_{i,t-1}) - (X_{i,t-1} - X_{i,t-2})} \cr\cr
-\code{3} \tab\tab log first difference \eqn{log(X_{i,t}) - log(X_{i,t-1})}{log(X_{i,t}) - log(X_{i,t-1})} \cr\cr
-\code{4} \tab\tab log second difference \eqn{(log(X_{i,t}) - log(X_{i,t-1})) - (log(X_{i,t-1}) - log(X_{i,t-2}))}{(log(X_{i,t}) - log(X_{i,t-1})) - (log(X_{i,t-1}) - log(X_{i,t-2}))} \cr\cr
-\code{5} \tab\tab growth rate \eqn{(X_{i,t} - X_{i,t-1})/X_{i,t-1}}{(X_{i,t} - X_{i,t-1})/X_{i,t-1}} \cr\cr
-\code{6} \tab\tab log growth rate \eqn{(log(X_{i,t}) - log(X_{i,t-1}))/log(X_{i,t-1})}{(log(X_{i,t}) - log(X_{i,t-1}))/log(X_{i,t-1})} \cr\cr
+\code{1} \tab\tab no change \cr\cr
+\code{2} \tab\tab first difference \eqn{X_{i,t} - X_{i,t-1}}{X_{i,t} - X_{i,t-1}} \cr\cr
+\code{3} \tab\tab second difference \eqn{(X_{i,t} - X_{i,t-1}) - (X_{i,t-1} - X_{i,t-2})}{(X_{i,t} - X_{i,t-1}) - (X_{i,t-1} - X_{i,t-2})} \cr\cr
+\code{4} \tab\tab log first difference \eqn{log(X_{i,t}) - log(X_{i,t-1})}{log(X_{i,t}) - log(X_{i,t-1})} \cr\cr
+\code{5} \tab\tab log second difference \eqn{(log(X_{i,t}) - log(X_{i,t-1})) - (log(X_{i,t-1}) - log(X_{i,t-2}))}{(log(X_{i,t}) - log(X_{i,t-1})) - (log(X_{i,t-1}) - log(X_{i,t-2}))} \cr\cr
+\code{6} \tab\tab growth rate \eqn{(X_{i,t} - X_{i,t-1})/X_{i,t-1}}{(X_{i,t} - X_{i,t-1})/X_{i,t-1}} \cr\cr
+\code{7} \tab\tab log growth rate \eqn{(log(X_{i,t}) - log(X_{i,t-1}))/log(X_{i,t-1})}{(log(X_{i,t}) - log(X_{i,t-1}))/log(X_{i,t-1})} \cr\cr
 }}
 }
 \value{
