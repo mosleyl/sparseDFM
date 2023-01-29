@@ -262,9 +262,12 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     lw = t(x$params$Lambda)
     
     series.names = unlist(dimnames(x$params$Lambda)[1])
+    if(is.null(series.names)){
+      series.names = which.series
+    } 
     
     data <- data.frame(
-      x= if(!is.null(series.names)) series.names else which.series,
+      x= series.names,
       y=as.numeric(lw[loading.factor, which.series])
     )
     
@@ -313,9 +316,12 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     lw = t(x$params$Lambda)
     
     series.names = unlist(dimnames(x$params$Lambda)[1])
+    if(is.null(series.names)){
+      series.names = which.series
+    } 
     
     data <- data.frame(
-      x= if(!is.null(series.names)) series.names else which.series,
+      x= series.names,
       y=as.numeric(lw[loading.factor, which.series])
     )
     
