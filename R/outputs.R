@@ -262,12 +262,9 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     lw = t(x$params$Lambda)
     
     series.names = unlist(dimnames(x$params$Lambda)[1])
-    if(is.null(series.names)){
-      series.names = which.series
-    } 
     
     data <- data.frame(
-      x= series.names,
+      x=if(!is.null(series.names)) series.names else which.series,
       y=as.numeric(lw[loading.factor, which.series])
     )
     
@@ -279,8 +276,8 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     
     # plot
-    ggplot(data, aes(x=factor(x, levels = series.names), y=y)) +
-      geom_segment( aes(x=factor(x, levels = series.names), xend=factor(x, levels = series.names), y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
+    ggplot(data, aes(x=factor(x, levels = x), y=y)) 
+      geom_segment( aes(x=factor(x, levels = x), xend=factor(x, levels = x), y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
       theme_light() +
       scale_color_manual(breaks=unique_group_names,values = mycolors) +
       theme(
@@ -316,12 +313,9 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     lw = t(x$params$Lambda)
     
     series.names = unlist(dimnames(x$params$Lambda)[1])
-    if(is.null(series.names)){
-      series.names = which.series
-    } 
-    
+
     data <- data.frame(
-      x= series.names,
+      x= if(!is.null(series.names)) series.names else which.series,
       y=as.numeric(lw[loading.factor, which.series])
     )
     
@@ -333,8 +327,8 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
   
     
     # plot
-    ggplot(data, aes(x=factor(x, levels = series.names), y=y)) +
-      geom_segment( aes(x=factor(x, levels = series.names), xend=factor(x, levels = series.names), y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
+    ggplot(data, aes(x=factor(x, levels = x), y=y)) +
+      geom_segment( aes(x=factor(x, levels = x), xend=factor(x, levels = x), y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
       theme_light() +
       scale_color_manual(breaks=unique_group_names,values = mycolors) +
       theme(

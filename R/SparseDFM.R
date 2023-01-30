@@ -131,6 +131,8 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
     stop("threshold must be > 0")
   }
   
+  # Unclass X - make sure it is a numeric matrix 
+  X = unclass(X)
   
   # make sure lasso parameter grid is low to high 
   alphas = sort(alphas)
