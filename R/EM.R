@@ -331,10 +331,12 @@ EM <- function(X, a0_0, P0_0, A.tilde, Lambda.tilde, Sigma.eta, Sigma.u.tilde, a
                                  + diag((I - W[t,])*diag(Sigma.eta)*(I - W[t,])))
       }
       Sig_e = Sig_e_new/n
-      Sig_e = diag(diag(Sig_e))
+      Sig_e = diag(Sig_e)
+      Sig_e[Sig_e < 1e-7] = 1e-7
+      Sig_e = diag(Sig_e)
       
       Sigma.eta = Sig_e
-
+      print(min(diag(Sigma.eta)))
       converged <- emConverged(loglik, previous_loglik, threshold)
       previous_loglik <- loglik
       loglik.store[num_iter] = loglik
