@@ -103,6 +103,7 @@ summary.sparseDFM <- function(object,...){
 #' @param factor.col character. The colour of the factor estimate line in \code{"factor"}. Default is \code{factor.col} = \code{"black"}.
 #' @param factor.lwd integer. The line width of the factor estimate line in \code{"factor"}. Default is \code{factor.lwd} = 2.
 #' @param factor.lab vector of characters to label each factor in \code{"loading.heatmap"}. Default is \code{NULL} for standard labeling. 
+#' @param use.series.names logical. Set to TRUE if plot should display series names in the data matrix X. Default is \code{FALSE} for numbered series. 
 #' @param series.lab vector of characters to label each data series in \code{"loading.heatmap"}. Default is \code{NULL} for standard labeling.
 #' @param series.labpos numeric vector of integers representing which series are labeled by \code{series.lab}. Default is \code{NULL} for standard labeling. 
 #' @param colorkey logical. Display the colour key of the heatmap in \code{"loading.heatmap"}. Default is \code{TRUE}.
@@ -128,8 +129,8 @@ summary.sparseDFM <- function(object,...){
 
 plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$factors)[2]), scale.factors = TRUE, 
                            which.series = 1:(dim(x$params$Lambda)[1]), loading.factor = 1, series.col = 'grey',
-                           factor.col = 'black', factor.lwd = 2, factor.lab = NULL, series.lab = NULL, series.labpos = NULL,
-                           colorkey = TRUE, col.regions = NULL, group.names = NULL, group.cols = NULL, 
+                           factor.col = 'black', factor.lwd = 2, factor.lab = NULL, use.series.names = FALSE, series.lab = NULL,
+                           series.labpos = NULL,colorkey = TRUE, col.regions = NULL, group.names = NULL, group.cols = NULL,
                            group.legend = TRUE, residual.type = 'boxplot', scatter.series = 1, min.bic.col = 'red', ...){
   
   # global variable declaration 
@@ -239,6 +240,10 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     lw = Matrix::Matrix(trL[which.factors,which.series], sparse = TRUE)
     
     series.names = unlist(dimnames(x$params$Lambda)[1])
+    
+    if(!use.series.names){
+      series.names = NULL
+    }
  
     Matrix::image(lw, xlab = if(is.null(dots$xlab))'Series' else dots$xlab,
                   ylab = if(is.null(dots$ylab))'Factor' else dots$ylab, sub = NULL,
@@ -263,6 +268,10 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     series.names = unlist(dimnames(x$params$Lambda)[1])
     
+    if(!use.series.names){
+      series.names = NULL
+    }
+    
     data <- data.frame(
       x=if(!is.null(series.names)) series.names else which.series,
       y=as.numeric(lw[loading.factor, which.series])
@@ -274,10 +283,14 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     mycolors = 'black'
     
+    if(!is.null(series.names)){
+      data$x = factor(data$x, levels = data$x)
+    }
+    
     
     # plot
-    ggplot(data, aes(x=factor(x, levels = x), y=y)) 
-      geom_segment( aes(x=factor(x, levels = x), xend=factor(x, levels = x), y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
+    ggplot(data, aes(x=x, y=y)) +
+      geom_segment( aes(x, xend=x, y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
       theme_light() +
       scale_color_manual(breaks=unique_group_names,values = mycolors) +
       theme(
@@ -313,6 +326,10 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     lw = t(x$params$Lambda)
     
     series.names = unlist(dimnames(x$params$Lambda)[1])
+    
+    if(!use.series.names){
+      series.names = NULL
+    }
 
     data <- data.frame(
       x= if(!is.null(series.names)) series.names else which.series,
@@ -325,10 +342,13 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     mycolors = group.cols
   
+    if(!is.null(series.names)){
+      data$x = factor(data$x, levels = data$x)
+    }
     
     # plot
-    ggplot(data, aes(x=factor(x, levels = x), y=y)) +
-      geom_segment( aes(x=factor(x, levels = x), xend=factor(x, levels = x), y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
+    ggplot(data, aes(x=x, y=y)) +
+      geom_segment( aes(x=x, xend=x, y=0, yend=y, color=Group), size=1.2, alpha=0.9) +
       theme_light() +
       scale_color_manual(breaks=unique_group_names,values = mycolors) +
       theme(
@@ -346,7 +366,7 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
   
   ## type = 'residual'
   
-  else if(type == 'resdiual'){
+  else if(type == 'residual'){
     
     if(residual.type == 'scatter' && is.null(scatter.series)) stop("No series chosen in scatter.series")
     
@@ -357,6 +377,10 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     series.names = unlist(dimnames(x$params$Lambda)[1])
     
+    if(!use.series.names){
+      series.names = NULL
+    }
+    
     resids = x$data$X.bal - x$data$fitted
     
     if(residual.type=='boxplot'){
@@ -364,9 +388,9 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       data_long = melt(resids)
       
       data_long = data_long[,-1]
-      
+
       # plot
-      ggplot(data_long, aes(x=Var2, y=value)) +
+      ggplot(data_long, aes(x=factor(Var2), y=value)) +
         geom_boxplot() +
         theme_light() +
         theme(

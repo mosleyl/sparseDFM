@@ -609,6 +609,10 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
           
           # check if a column of Lambda has been set entirely to 0
             
+            if(any(colSums(EM.fit$Lambda.tilde[(q+1):p,1:r]) == 0) && alphas.index == 1){
+              stop('First alpha value to large. All variables set to 0 in a factor. Make alpha value smaller.')
+            }
+            
             if(any(colSums(EM.fit$Lambda.tilde[(q+1):p,1:r]) == 0)){
               break
             }

@@ -15,6 +15,7 @@
   factor.col = "black",
   factor.lwd = 2,
   factor.lab = NULL,
+  use.series.names = FALSE,
   series.lab = NULL,
   series.labpos = NULL,
   colorkey = TRUE,
@@ -48,6 +49,8 @@
 \item{factor.lwd}{integer. The line width of the factor estimate line in \code{"factor"}. Default is \code{factor.lwd} = 2.}
 
 \item{factor.lab}{vector of characters to label each factor in \code{"loading.heatmap"}. Default is \code{NULL} for standard labeling.}
+
+\item{use.series.names}{logical. Set to TRUE if plot should display series names in the data matrix X. Default is \code{FALSE} for numbered series.}
 
 \item{series.lab}{vector of characters to label each data series in \code{"loading.heatmap"}. Default is \code{NULL} for standard labeling.}
 
