@@ -13,6 +13,7 @@ VAR <- function(x, p) {
     X <- cbind(X, x[(p + 1 - i):(n - i), ])
   }
   A <- solve(t(X) %*% X) %*% t(X) %*% Y
+  A[A >= 1] = 0.99
   res <- Y - X %*% A
   
   return(list(Y = Y, X = X, A = A, res = res))
