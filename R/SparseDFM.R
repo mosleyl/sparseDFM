@@ -293,7 +293,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         
     ## Fill in missing data in X
         
-        fit_x = state.KS %*% t(Lambda.tilde)
+        fit_x = state.KS[,1:r] %*% t(Lambda.tilde[,1:r])
         if(standardize){
           fit_X = kronecker(t(X.sd),rep(1,n))*fit_x + kronecker(t(X.mean),rep(1,n))
         }else{
@@ -445,7 +445,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
       
       # fill in missing data in X
       
-      fit_x = state.EM %*% t(Lambda.tilde)
+      fit_x = state.EM[,1:r] %*% t(Lambda.tilde[,1:r])
       if(standardize){
         fit_X = kronecker(t(X.sd),rep(1,n))*fit_x + kronecker(t(X.mean),rep(1,n))
       }else{
@@ -673,7 +673,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         
       ## Fill in missing data in X
         
-        fit_x = state.EM %*% t(Lambda.tilde)
+        fit_x = state.EM[,1:r] %*% t(Lambda.tilde[,1:r])
         if(standardize){
           fit_X = kronecker(t(X.sd),rep(1,n))*fit_x + kronecker(t(X.mean),rep(1,n))
         }else{

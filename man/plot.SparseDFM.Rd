@@ -86,5 +86,6 @@ Make plots for the output of sparseDFM(). Options include:
 \item \code{loading.grouplineplot} - separate variable groups into colours for better visualisation
 \item \code{residual} - boxplot or scatterplot of residuals
 \item \code{lasso.bic} - BIC values for the LASSO tuning parameter
+\item \code{em.convergence} - log-likelihood convergence of EM iterations
 }
 }

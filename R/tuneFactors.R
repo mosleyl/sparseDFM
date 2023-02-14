@@ -7,7 +7,7 @@
 #' @param type Character. Option for which information criteria to use. Default is 2. 
 #' @param standardize Logical. Standardize the data before estimating the model. Default is \code{TRUE}.
 #' @param r.max Integer. Maximum number of factors to search for. Default is min(15,ncol(X)-1). 
-#' @param plot Logical. Make a plot showing the IC value for each of the number of factors considered. Default is \code{FALSE}.
+#' @param plot Logical. Make a plot showing the IC value for each of the number of factors considered. Default is \code{TRUE}.
 #' 
 #' @returns 
 #' The number of factors to use according to Bai and Ng (2002) information criteria.
@@ -32,7 +32,7 @@
 #' @export
 
 
-tuneFactors <- function(X, type = 2, standardize = TRUE, r.max = min(15,ncol(X)-1), plot = FALSE){
+tuneFactors <- function(X, type = 2, standardize = TRUE, r.max = min(15,ncol(X)-1), plot = TRUE){
   
   X = as.matrix(X)
   
@@ -71,10 +71,27 @@ tuneFactors <- function(X, type = 2, standardize = TRUE, r.max = min(15,ncol(X)-
   }
   
   if(plot){
-    graphics::plot(IC, main = paste("IC",type), xlab = "Number of factors", ylab = "Index")
-    graphics::points(which.min(IC), IC[which.min(IC)], pch = 19, col ="red")
-  }
+    
+    par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
+    par(mfrow = c(2,1))
+    
+    plot(IC, main = paste("IC",type), xlab = "Number of factors", ylab = "Index")
+    points(which.min(IC), IC[which.min(IC)], pch = 16, col ="red")
   
+    ev = evd$values 
+    pve = (ev/sum(ev))*100
+    if(length(ev) > r.max){
+      ev = ev[1:r.max]
+      pve = pve[1:r.max]
+    }
+    plot(pve, type = 'o', ylab = '% Variance explained',xlab = "Number of factors")
+    grid()
+    points(which.min(IC), pve[which.min(IC)], pch = 16, col='red')
+    
+    par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
+    par(mfrow = c(1,1))
+    
+  }
   
   return(paste("The chosen number of factors using criteria type ", type, " is ", which.min(IC)))
   

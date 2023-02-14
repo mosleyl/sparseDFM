@@ -9,7 +9,7 @@ tuneFactors(
   type = 2,
   standardize = TRUE,
   r.max = min(15, ncol(X) - 1),
-  plot = FALSE
+  plot = TRUE
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ tuneFactors(
 
 \item{r.max}{Integer. Maximum number of factors to search for. Default is min(15,ncol(X)-1).}
 
-\item{plot}{Logical. Make a plot showing the IC value for each of the number of factors considered. Default is \code{FALSE}.}
+\item{plot}{Logical. Make a plot showing the IC value for each of the number of factors considered. Default is \code{TRUE}.}
 }
 \value{
 The number of factors to use according to Bai and Ng (2002) information criteria.

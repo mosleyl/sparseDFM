@@ -91,6 +91,7 @@ summary.sparseDFM <- function(object,...){
 #' \item \code{loading.grouplineplot} - separate variable groups into colours for better visualisation 
 #' \item \code{residual} - boxplot or scatterplot of residuals 
 #' \item \code{lasso.bic} - BIC values for the LASSO tuning parameter
+#' \item \code{em.convergence} - log-likelihood convergence of EM iterations 
 #' }
 #' 
 #' @param x an object of class 'sparseDFM'.
@@ -381,13 +382,20 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       series.names = NULL
     }
     
+    
     resids = x$data$X.bal - x$data$fitted
+    resids = resids[,which.series]
     
     if(residual.type=='boxplot'){
+      
+      if(is.null(series.names)){
+        colnames(resids) = which.series
+      }
     
       data_long = melt(resids)
       
       data_long = data_long[,-1]
+      
 
       # plot
       ggplot(data_long, aes(x=factor(Var2), y=value)) +
@@ -419,10 +427,11 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
   }
   
   ## type = 'lasso.bic'
-  else{
+  else if(type == 'lasso.bic'){
     
     par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
     par(mfrow = c(1,1))
+    par(xpd=FALSE)
     
     dots = list(...)
     
@@ -433,6 +442,21 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     plot(log10(x$em$alpha_grid),x$em$bic, type = if(is.null(dots$type)) 'o' else dots$type, pch = if(is.null(dots$pch)) 20 else dots$pch, col = mycols, xlab =  if(is.null(dots$xlab)) expression(paste("log10(", alpha,')')) else dots$xlab, ylab = if(is.null(dots$ylab)) 'BIC' else dots$ylab, main = if(is.null(dots$main)) 'BIC Values for the LASSO Tuning Parameter' else dots$main)
     
     abline(v=log10(x$em$alpha_opt), col = min.bic.col, lty = 'dashed')
+    
+  }else{
+    
+    par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
+    par(mfrow = c(1,1))
+    
+    dots = list(...)
+    
+    if(x$data$method != 'EM' && x$data$method != 'EM-sparse'){
+      stop("Method in sparseDFM() does not use the EM algorithm.")
+    }
+    
+    logliks = x$em$loglik
+    
+    plot(logliks, xlab = if(is.null(dots$xlab)) 'Iteration' else dots$xlab, ylab = if(is.null(dots$ylab)) 'Value' else dots$ylab, main = if(is.null(dots$main)) 'Log-Likelihood Values of EM Iterations' else dots$main)
     
   }
   
@@ -601,6 +625,69 @@ print.sparseDFM_forecast <- function(x,...){
   }
   
 }
+
+
+# MISSING DATA PLOT 
+
+#' @title 
+#' Plot the missing data in a data matrix/frame
+#' 
+#' @description 
+#' Visualise the amount of missing data in a data matrix or data frame.
+#' 
+#' @param data Numeric matrix or data frame with NA for missing values.
+#' @param present.colour The colour for data that is present. Default is 'grey80'.
+#' @param missing.colour The colour for data that is missing. Default is 'grey20'.
+#' 
+#' @importFrom ggplot2 ggplot geom_raster aes theme_minimal theme element_text labs scale_y_reverse guides scale_fill_manual scale_x_discrete 
+#' 
+#' @export 
+
+missing_data_plot <- function(data, present.colour = 'grey80', missing.colour = 'grey20'){
+  
+  x = as.data.frame(data)
+  na.x = is.na(x)
+  missing = (sum(na.x)/(nrow(x)*ncol(x)))*100
+  notmissing = 100 - missing 
+  present.label = paste0('present (',round(notmissing,1),'%)')
+  missing.label = paste0('missing (',round(missing,1),'%)')
+  
+  variables = rep(names(x),nrow(x))
+  value = as.character(c(t(na.x)))
+  obs = rep(1:nrow(x), each = ncol(x))
+  
+  newdat = data.frame(obs, variables, value)
+  
+   ggplot(data = newdat,aes(x = variables, y = obs)) +
+    geom_raster(aes(fill = value)) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45,vjust = 1,hjust = 1)) +
+    labs(x = "",y = "Observations") +
+    scale_y_reverse() +
+    theme(axis.text.x = element_text(hjust = 0.5)) +
+    guides(colour = "none") + 
+    scale_fill_manual(
+      name = "",
+      values = c(
+        present.colour,
+        missing.colour
+      ),
+      labels = c(
+        present.label,
+        missing.label
+      )
+    ) +
+    theme(axis.text.x = element_text(hjust = 0)) + 
+    scale_x_discrete(
+      position = "top",
+      limits = names(x),
+      labels = names(x)
+    )
+   
+   
+}
+
+
 
 
 

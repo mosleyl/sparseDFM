@@ -15,10 +15,14 @@ linspace <- function(x1, x2, n=100) {
 
 #' logspace 
 #' 
+#' @description 
+#' Produce a vector of log10 space values 
+#' 
 #' @param x1 lower bound 
 #' @param x2 upper bound 
 #' @param n length 
-#' @noRd
+#' 
+#' @export 
 
 logspace <- function(x1, x2, n=50) {
   if (x2 == pi) x2 <- log10(x2)
