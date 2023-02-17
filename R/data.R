@@ -10,4 +10,8 @@
 #'   ...
 #' }
 #' @source <https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceindices>
+#' 
+#' @examples 
+#' data = inflation 
+#' 
 "inflation"

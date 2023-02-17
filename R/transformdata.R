@@ -66,6 +66,6 @@ transformData <- function(X, stationary_transform){
     }
     
   }
-  
+  colnames(newX) = colnames(X)
   return(newX)
 }

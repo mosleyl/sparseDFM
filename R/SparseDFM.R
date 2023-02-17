@@ -97,6 +97,44 @@
 #' 
 #' Stock, J. H., & Watson, M. W. (2002). Forecasting using principal components from a large number of predictors. \emph{Journal of the American statistical association, 97}(460), 1167-1179.  
 #'  
+#' @examples 
+#' # load inflation data set 
+#' data = inflation
+#' 
+#' # make stationary by taking first differences 
+#' new_data = transformData(data, rep(2,ncol(data)))
+#' 
+#' # tune for the number of factors to use 
+#' tuneFactors(new_data, type = 2)
+#' 
+#' # fit a PCA using 3 PC's
+#' fit.pca <- sparseDFM(new_data, r = 3, alg = 'PCA')
+#' 
+#' # fit a DFM using the two-stage approach 
+#' fit.2stage <- sparseDFM(new_data, r = 3, alg = '2Stage')
+#' 
+#' # fit a DFM using EM algorithm with 3 factors 
+#' fit.dfm <- sparseDFM(new_data, r = 3, alg = 'EM')
+#' 
+#' # fit a Sparse DFM with 3 factors 
+#' fit.sdfm <- sparseDFM(new_data, r = 3, alg = 'EM-sparse')
+#' 
+#' # observe the factor loadings of the sparse DFM
+#' plot(fit.sdfm, type = 'loading.heatmap')
+#' 
+#' # observe the factors 
+#' plot(fit.sdfm, type = 'factor')
+#' 
+#' # observe the residuals 
+#' plot(fit.sdfm, type = 'residual')
+#' 
+#' # observe the LASSO parameter selected and BIC values 
+#' plot(fit.sdfm, type = 'lasso.bic')
+#' 
+#' # predict 3 steps ahead 
+#' predict(fit.sdfm, h = 3)
+#' 
+#'  
 #' @useDynLib sparseDFM, .registration = TRUE
 #'  
 #' @export

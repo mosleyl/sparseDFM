@@ -409,8 +409,8 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
           axis.text.x = if(!is.null(series.names)) element_text(angle = 90, vjust = 0.5, hjust=1) else element_text(angle = NULL, vjust = NULL, hjust=NULL) 
         ) +
         xlab(if(is.null(dots$xlab))"Series"else dots$xlab) +
-        ylab(if(is.null(dots$ylab))"Loading Value"else dots$ylab) + 
-        ggtitle(if(is.null(dots$main))paste("Loadings for Factor", loading.factor) else dots$main)
+        ylab(if(is.null(dots$ylab))"Value"else dots$ylab) + 
+        ggtitle(if(is.null(dots$main)) 'Residual Boxplots' else dots$main)
     }else{
       
       s.names = unlist(dimnames(resids)[2])

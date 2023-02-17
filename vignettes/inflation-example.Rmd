@@ -1,0 +1,160 @@
+---
+title: "Using sparseDFM - Inflation Example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using sparseDFM - Inflation Example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.width = 7,
+  fig.height = 5,
+  comment = "#>"
+)
+```
+
+```{r setup, message = FALSE}
+library(sparseDFM)
+```
+
+This vignette provides a tutorial on how to apply the package *sparseDFM* onto a small subset of quarterly CPI (consumer price inflation) index data for the UK taken from the Office from National Statistics' (ONS) website^[Data source: <https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceindices>]. The data contains 36 variables of different classes of the inflation index and 135 observations from 1989 Q1 to 2022 Q3^[The data is from the Q4 2022 release and is benchmarked to 2015=100]. 
+
+## Exploring the Data 
+
+Before we fit a model it is first worthwhile to perform some exploratory data analysis. Two main properties to look out for when working with dynamic factor models are the amount of missing data present in the data and if the data series are stationary or not. The function `missing_data_plot()` allows the user to visualise where missing data is present. The function `transformData()` allows the user to apply a stationary transformation to the data. It contains the parameter `stationary_transform = ` options of: 1 for no change, 2 for first difference, 3 for second difference, 4 for log first difference, 5 for log second difference, 6 for growth rate and 7 for log growth rate. 
+
+```{r}
+# load inflation data 
+data = inflation 
+# n = 135, p = 36
+dim(data)
+# Names of inflation variables 
+colnames(data)
+# Plot of data (standardised to mean 0 sd 1)
+matplot(scale(data), type = 'l', ylab = 'Standardised Values', xlab = 'Observations')
+```
+
+The data does not look very stationary. Dynamic factor models (DFMs) assume the data is stationary and so therefore let's try transforming the data by taking first differences.
+
+```{r}
+# Take first differences 
+new_data = transformData(data, stationary_transform = rep(2,ncol(data)))
+# Plot new_data (standardised to mean 0 sd 1)
+matplot(scale(new_data), type = 'l', ylab = 'Standardised Values', xlab = 'Observations')
+```
+
+The data now looks fairly stationary. Let's now see if there is any missing data present. 
+
+```{r}
+missing_data_plot(data)
+```
+
+We can see 6 variables have some missing data at the start of their sample. The state-space framework of DFMS allows them to handle arbitrary patterns of missing data present, so there is no need to worry. The package therefore may also be used as a practical way to perform missing data interpolation in large data sets. 
+
+## Structure of the Model 
+
+Before we fit a DFM, we first need to determine the best number of factors to use in the model. Our built-in function `tuneFactors()` uses the popular Bai and Ng (2002)^[Bai, J., & Ng, S. (2002). Determining the number of factors in approximate factor models. *Econometrica, 70*(1), 191-221.] information criteria approach to perform this tuning. The function prints out the optimal number of factors to use as chosen by information criteria type 1, 2 or 3 from Bai and Ng (2002) and also two plots. The first plot provides the information criteria value corresponding to the number of factors used and the second plot is a screeplot showing the percentage variance explained of the addition of more factors. In this type of plot we look for an 'elbow' in the curve to represent the point where the addition of more factors does not really explain much more of the variance in the data. 
+
+```{r}
+tuneFactors(new_data)
+```
+
+We find that the best number of factors to use for the (stationary) data is 3. We now can go ahead and fit a DFM and a Sparse DFM to the stationary data set to find factor estimates and explore the loadings matrix. 
+
+## Fitting a DFM 
+
+We begin by fitting a standard DFM to the data. This model follows the EM algorithm estimation approach of Banbura and Mudugno (2014)^[Bańbura, M., & Modugno, M. (2014). Maximum likelihood estimation of factor models on datasets with arbitrary pattern of missing data. *Journal of applied econometrics, 29*(1), 133-160.], allowing for arbitrary patterns of missing data to be handled and efficient iterative estimation of model parameters using (quasi) maximum likelihood estimation. The standard DFM with 3 factors can be implemented like so:
+
+```{r}
+fit.dfm <- sparseDFM(new_data, r=3, alg = 'EM', err = 'IID', kalman = 'univariate')
+summary(fit.dfm)
+
+```
+
+We set `alg = 'EM'` for the DFM estimation technique of Banbura and Mudogno (2014). Alternatives here would be to set `alg = 'PCA'` for a principle components analysis solution as in Stock and Watson (2002)^[Stock, J. H., & Watson, M. W. (2002). Forecasting using principal components from a large number of predictors. *Journal of the American statistical association, 97*(460), 1167-1179.]. Or `alg = '2Stage'` for the two-stage PCA + Kalman smoother estimation from Giannone et al. (2008)^[Giannone, D., Reichlin, L., & Small, D. (2008). Nowcasting: The real-time informational content of macroeconomic data. *Journal of monetary economics, 55*(4), 665-676.]. Or `alg = 'EM-sparse'` for the new Sparse DFM technique of (cite) to induce sparse loadings. For the EM algorithm, we use the default settings of `max_iter = 100` and `threshold = 1e-04` for the maximum number of iterations of the EM algorithm and the convergence threshold respectively. This can be changed. 
+
+We set `err = 'IID'` for IID idiosyncratic errors and `kalman = 'univariate'` for an implementation of the fast univariate filtering technique for kalman filter and smoother equations of Koopman and Durbin (2000)^[Koopman, S. J., & Durbin, J. (2000). Fast filtering and smoothing for multivariate state space models. *Journal of time series analysis, 21*(3), 281-296.]. Note, we could set `err = 'ar1'` for idiosyncratic errors following an AR(1) process, however, this comes at a cost of being slower than the IID error case as the AR(1) errors are added as latent states to the model. It is better to use `kalman = 'multivariate'` when using `alg = 'ar1'` as univariate filtering a lot of states is costly. 
+
+The package *sparseDFM* provides many useful S3 class plots to visualise the estimated factors and loadings and provide information on the EM algorithm. 
+
+```{r}
+# Plot all of the estimated factors 
+plot(fit.dfm, type = 'factor')
+
+```
+
+We can see that 3 factors (solid black lines) are capturing the majority of the variance of the stationary data (grey). The user has options to change the number of factors to display by setting the parameter `which.factors` to be equal to a vector between 1 and $r$ (the number of factors). Also, able to change the colours by using parameters `series.col` and `factor.col`.
+
+```{r}
+# Plot a heatmap of the loadings for all factors 
+plot(fit.dfm, type = 'loading.heatmap', use.series.names = TRUE)
+```
+
+The loadings heatmap plot is really useful to see the weight each variable has on the factors. If the data matrix has variable names then the plot will display these names. Set `use.series.names` to `FALSE` for numbers. You are able to specify which series to show using parameter `which.series`. The default is all parameters, 1:$p$. Similarly, choose which factors to show with `which.factors`. 
+
+```{r}
+# Plot a line plot for the loadings for factor 1 
+plot(fit.dfm, type = 'loading.lineplot', loading.factor = 1, use.series.names = TRUE)
+```
+
+The loading lineplot is an alternative way of displaying the contribution of the variables to the factors. Choose which factor to display using   `loading.factor`. 
+
+```{r}
+# Plot boxplots for the residuals of each variable 
+plot(fit.dfm, type = 'residual', use.series.names = TRUE)
+```
+
+To make a plot of the residuals for each variable set `type = 'residual'`. For a scatterplot of a particular variable add the parameters `residual.type = 'scatter'` and `scatter.series = 1` or whichever variable series you wish to plot. 
+
+It may also be informative to look into the convergence of the EM algorithm. Possible ways of doing this are like so:
+
+```{r}
+# Did the EM algorithm converge?
+fit.dfm$em$converged
+# How many iterations did the EM take to converge?
+fit.dfm$em$num_iter
+# What were the log-likelihood values at each EM iteration?
+fit.dfm$em$loglik
+# Plot these log-likelihood values 
+plot(fit.dfm, type = 'em.convergence')
+```
+
+Finally, we can use the DFM fit to return fitted values for dataset giving us predictions for any missing data present. This can be found by calling `fit.dfm\$data\$fitted.unscaled` (or `fit.dfm\$data\$fitted` for the standardised fit). Also, we can forecast future values of the data and of the festimated factors by using `predict()` like so:
+
+```{r}
+# Forecast 3 steps ahead of the sample 
+my_forecast <- predict(fit.dfm, h = 3)
+my_forecast
+```
+
+
+## Fitting a Sparse DFM
+
+Now let's see how we can fit a Sparse DFM to the inflation data.  
+
+```{r}
+fit.sdfm <- sparseDFM(new_data, r = 3, alphas = logspace(-2,3,100), alg = 'EM-sparse', err = 'IID', kalman = 'univariate')
+summary(fit.sdfm)
+```
+
+We tune for the best $\ell_1$-norm penalty parameter using BIC^[See (cite)] across a logspace grid of values from $10^{-2}$ to $10^{3}$. This is the default grid to cover a wide range of values. The user can input any grid or a single value for the penalty using parameter `alphas =`. We stop searching over the grid of alphas as soon as an entire column of the loadings matrix $\bm{\Lambda}$ is entirely 0. We can find which $\ell_1$-norm penalty parameter was chosen as best and observe the BIC values for each parameter considered by doing:
+
+```{r}
+# Grid of alpha values used before a column of Lambda was set entirely to 0 
+fit.sdfm$em$alpha_grid
+# The best alpha chosen 
+fit.sdfm$em$alpha_opt
+# Plot the BIC values for each alpha 
+plot(fit.sdfm, type = 'lasso.bic')
+```
+
+Let's view a heatmap of the estimated loadings to see if any variables have become sparse:
+
+```{r}
+plot(fit.sdfm, type = 'loading.heatmap', use.series.names = TRUE)
+```
+
+It is easily to visualise sparsity in this heatmap as white grids represent 0 loading values. We find in some factors, certain variables are set to 0. This provides a bit more interpretation into how the inflation data are loaded onto the estimated factors of the model. 
