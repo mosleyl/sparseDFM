@@ -63,7 +63,7 @@ A list-of-lists-like object of class 'sparseDFM' with the following elements:
 \code{X.bal} \tab\tab is a \eqn{n \times p}{n x p} numeric data matrix of the original \eqn{X} with missing data interpolated using \code{fillNA()}. \cr\cr
 \code{eigen} \tab\tab is the eigen decomposition of \code{X.bal}. \cr\cr
 \code{fitted} \tab\tab is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. \cr\cr
-\code{fitted.unscaled} is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. This has been unscaled back to original data scale if \code{standardize} is \code{TRUE}. \cr\cr
+\code{fitted.unscaled} \tab\tab is the \eqn{n \times p}{n x p} predicted data matrix using the estimated parameters: \eqn{\hat{\Lambda}\hat{F}}{\hat{\Lambda}\hat{F}} for IID errors and \eqn{\hat{\Lambda}\hat{F}+\hat{\epsilon}}{\hat{\Lambda}\hat{F}+\hat{\epsilon}} for AR(1) errors. This has been unscaled back to original data scale if \code{standardize} is \code{TRUE}. \cr\cr
 \code{method} \tab\tab the estimation algorithm used (\code{alg}). \cr\cr
 \code{err} \tab\tab the type of idiosyncratic errors assumed. Either \code{IID} or \code{AR1}. \cr\cr
 \code{call} \tab\tab call object obtained from \code{match.call()}. \cr\cr
@@ -109,6 +109,45 @@ Main function to allow estimation of a DFM or a sparse DFM (with sparse loadings
 }
 \details{
 For full details of the model please refer to Mosley et al. (2023).
+}
+\examples{
+# load inflation data set 
+data = inflation
+
+# make stationary by taking first differences 
+new_data = transformData(data, rep(2,ncol(data)))
+
+# tune for the number of factors to use 
+tuneFactors(new_data, type = 2)
+
+# fit a PCA using 3 PC's
+fit.pca <- sparseDFM(new_data, r = 3, alg = 'PCA')
+
+# fit a DFM using the two-stage approach 
+fit.2stage <- sparseDFM(new_data, r = 3, alg = '2Stage')
+
+# fit a DFM using EM algorithm with 3 factors 
+fit.dfm <- sparseDFM(new_data, r = 3, alg = 'EM')
+
+# fit a Sparse DFM with 3 factors 
+fit.sdfm <- sparseDFM(new_data, r = 3, alg = 'EM-sparse')
+
+# observe the factor loadings of the sparse DFM
+plot(fit.sdfm, type = 'loading.heatmap')
+
+# observe the factors 
+plot(fit.sdfm, type = 'factor')
+
+# observe the residuals 
+plot(fit.sdfm, type = 'residual')
+
+# observe the LASSO parameter selected and BIC values 
+plot(fit.sdfm, type = 'lasso.bic')
+
+# predict 3 steps ahead 
+predict(fit.sdfm, h = 3)
+
+ 
 }
 \references{
 Banbura, M., & Modugno, M. (2014). Maximum likelihood estimation of factor models on datasets with arbitrary pattern of missing data. \emph{Journal of Applied Econometrics, 29}(1), 133-160.
