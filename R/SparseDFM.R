@@ -169,6 +169,9 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
     stop("threshold must be > 0")
   }
   
+  # return original X input 
+  X.input = X
+  
   # Unclass X - make sure it is a numeric matrix 
   X = unclass(X)
   
@@ -245,7 +248,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         dimnames(factors.cov) = list(factor.names, factor.names)
 
         
-        output = list(data = list(X = X.raw,
+        output = list(data = list(X = X.input,
                                   standardize = standardize,
                                   X.mean = X.mean, 
                                   X.sd = X.sd,
@@ -279,7 +282,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         dimnames(Sigma_epsilon) = list(series.names, series.names)
         dimnames(factors.cov) = list(factor.names, factor.names)
 
-        output = list(data = list(X = X.raw,
+        output = list(data = list(X = X.input,
                                   standardize = standardize,
                                   X.mean = X.mean, 
                                   X.sd = X.sd,
@@ -369,7 +372,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         dimnames(factors.cov) = list(factor.names, factor.names)
         dimnames(errors.cov) = list(series.names, series.names)
         
-        output = list(data = list(X = X.raw,
+        output = list(data = list(X = X.input,
                                   standardize = standardize,
                                   X.mean = X.mean, 
                                   X.sd = X.sd,
@@ -410,7 +413,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         dimnames(Sigma_epsilon) = list(series.names, series.names)
         dimnames(factors.cov) = list(factor.names, factor.names)
         
-        output = list(data = list(X = X.raw,
+        output = list(data = list(X = X.input,
                                   standardize = standardize,
                                   X.mean = X.mean, 
                                   X.sd = X.sd,
@@ -519,7 +522,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         dimnames(factors.cov) = list(factor.names, factor.names)
         dimnames(errors.cov) = list(series.names, series.names)
         
-        output = list(data = list(X = X.raw,
+        output = list(data = list(X = X.input,
                                   standardize = standardize,
                                   X.mean = X.mean, 
                                   X.sd = X.sd,
@@ -564,7 +567,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         dimnames(Sigma_epsilon) = list(series.names, series.names)
         dimnames(factors.cov) = list(factor.names, factor.names)
         
-        output = list(data = list(X = X.raw,
+        output = list(data = list(X = X.input,
                                   standardize = standardize,
                                   X.mean = X.mean, 
                                   X.sd = X.sd,
@@ -747,7 +750,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
           dimnames(factors.cov) = list(factor.names, factor.names)
           dimnames(errors.cov) = list(series.names, series.names)
           
-          output = list(data = list(X = X.raw,
+          output = list(data = list(X = X.input,
                                     standardize = standardize,
                                     X.mean = X.mean, 
                                     X.sd = X.sd,
@@ -795,7 +798,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
           dimnames(Sigma_epsilon) = list(series.names, series.names)
           dimnames(factors.cov) = list(factor.names, factor.names)
           
-          output = list(data = list(X = X.raw,
+          output = list(data = list(X = X.input,
                                     standardize = standardize,
                                     X.mean = X.mean, 
                                     X.sd = X.sd,

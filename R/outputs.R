@@ -124,6 +124,7 @@ summary.sparseDFM <- function(object,...){
 #' @importFrom ggplot2 ggplot aes geom_segment theme_light scale_color_manual theme element_text element_blank xlab ylab ggtitle geom_boxplot
 #' @importFrom graphics par matplot lines box axis mtext boxplot plot abline
 #' @importFrom reshape2 melt
+#' @importFrom stats is.ts ts.plot ts start frequency 
 #' 
 #' @export 
 
@@ -133,6 +134,13 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
                            factor.col = 'black', factor.lwd = 2, factor.lab = NULL, use.series.names = FALSE, series.lab = NULL,
                            series.labpos = NULL,colorkey = TRUE, col.regions = NULL, group.names = NULL, group.cols = NULL,
                            group.legend = TRUE, residual.type = 'boxplot', scatter.series = 1, min.bic.col = 'red', ...){
+  
+  # check correct type input 
+  
+  if(type != 'factor' && type != 'loading.heatmap' && type != 'loading.lineplot' && type != 'loading.grouplineplot' &&
+     type != 'residual' && type != 'lasso.bic' && type != 'em.convergence'){
+    stop("Incorrect type input")
+  }
   
   # global variable declaration 
   y = Group = Var2 = value = NULL
@@ -164,39 +172,82 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     k = length(which.factors)
     
+    if(is.ts(x$data$X)){
+      x1 <- x$data$X
+      data = ts(data, start = start(x1), frequency = frequency(x1))
+      factors = ts(factors, start(x1), frequency = frequency(x1))
     
-    if(k > 1){
-      
-      oldpar <- par(mar = c(0, 5, 0, 2), oma = c(6, 0, 5, 0), mfrow = c(k, 1L))
-      on.exit(par(oldpar))
-      
-      for(i in which.factors) {
+    
+      if(k > 1){
         
-        matplot(data, type = 'l', col = series.col, axes = FALSE, xlab = "", ylab = "")
-        lines(factors[,i], type = 'l', col = factor.col, lwd = factor.lwd)
-        box()
-        axis(2, cex.axis = 1.2)
-        if(i == max(which.factors)) axis(1, cex.axis = 1.2)
-        mtext(paste("Factor", i), 2, line = 3, cex = 1.2)
-        if(i == max(which.factors)) mtext(if (is.null(dots$xlab)) 'Time' else dots$xlab, side = 1, line = 3, cex = 1.2)
+        oldpar <- par(mar = c(0, 5, 0, 2), oma = c(6, 0, 5, 0), mfrow = c(k, 1L))
+        on.exit(par(oldpar))
+        
+        for(i in which.factors) {
+          
+          ts.plot(data, gpars = list(col = series.col, axes = FALSE, xlab = "", ylab = ""))
+          lines(factors[,i], type = 'l', col = factor.col, lwd = factor.lwd)
+          box()
+          axis(2, cex.axis = 1.2)
+          if(i == max(which.factors)) axis(1, cex.axis = 1.2)
+          mtext(paste("Factor", i), 2, line = 3, cex = 1.2)
+          if(i == max(which.factors)) mtext(if (is.null(dots$xlab)) 'Time' else dots$xlab, side = 1, line = 3, cex = 1.2)
+          
+          
+        }
+        
+        par(mfrow = c(1, 1))
+        
+        mtext(if(is.null(dots$main)) paste(if(scale.factors) "Standardized", "Factor Estimates and Standardized Data") else dots$main,
+              side = 3, line = 2, outer=TRUE, cex = 1.3)
+        
+        
+      }else{
+        
+        ts.plot(data, col = series.col, ylab = if (is.null(dots$ylab))'Value' else dots$ylab,
+                xlab = if (is.null(dots$xlab)) 'Time' else dots$xlab,
+                main = if(is.null(dots$main)) paste(if(scale.factors) "Standardized", "Factor", which.factors, "Estimate and Standardized Data") else dots$main,
+                cex.axis = 1.2, cex.lab = 1.2, cex.main = 1.2)
+        lines(factors[,which.factors], col = factor.col, lwd = factor.lwd)
         
         
       }
-      
-      par(mfrow = c(1, 1))
-      
-      mtext(if(is.null(dots$main)) paste(if(scale.factors) "Standardized", "Factor Estimates and Standardized Data") else dots$main,
-            side = 3, line = 2, outer=TRUE, cex = 1.3)
-      
-      
     }else{
       
-      matplot(data, type = 'l', col = series.col, ylab = if (is.null(dots$ylab))'Value' else dots$ylab,
-              xlab = if (is.null(dots$xlab)) 'Time' else dots$xlab,
-              main = if(is.null(dots$main)) paste(if(scale.factors) "Standardized", "Factor", which.factors, "Estimate and Standardized Data") else dots$main,
-              cex.axis = 1.2, cex.lab = 1.2, cex.main = 1.2)
-      lines(factors[,which.factors], col = factor.col, lwd = factor.lwd)
-      
+      if(k > 1){
+        
+        oldpar <- par(mar = c(0, 5, 0, 2), oma = c(6, 0, 5, 0), mfrow = c(k, 1L))
+        on.exit(par(oldpar))
+        
+        for(i in which.factors) {
+          
+          matplot(data, type = 'l', col = series.col, axes = FALSE, xlab = "", ylab = "")
+          lines(factors[,i], type = 'l', col = factor.col, lwd = factor.lwd)
+          box()
+          axis(2, cex.axis = 1.2)
+          if(i == max(which.factors)) axis(1, cex.axis = 1.2)
+          mtext(paste("Factor", i), 2, line = 3, cex = 1.2)
+          if(i == max(which.factors)) mtext(if (is.null(dots$xlab)) 'Time' else dots$xlab, side = 1, line = 3, cex = 1.2)
+          
+          
+        }
+        
+        par(mfrow = c(1, 1))
+        
+        mtext(if(is.null(dots$main)) paste(if(scale.factors) "Standardized", "Factor Estimates and Standardized Data") else dots$main,
+              side = 3, line = 2, outer=TRUE, cex = 1.3)
+        
+        
+        }else{
+          
+          matplot(data, type = 'l', col = series.col, ylab = if (is.null(dots$ylab))'Value' else dots$ylab,
+                  xlab = if (is.null(dots$xlab)) 'Time' else dots$xlab,
+                  main = if(is.null(dots$main)) paste(if(scale.factors) "Standardized", "Factor", which.factors, "Estimate and Standardized Data") else dots$main,
+                  cex.axis = 1.2, cex.lab = 1.2, cex.main = 1.2)
+          lines(factors[,which.factors], col = factor.col, lwd = factor.lwd)
+          
+          
+        }
       
     }
     
@@ -218,8 +269,8 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     
     # make sure it is of normal display 
-    par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
-    par(mfrow = c(1,1))
+    # par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
+    # par(mfrow = c(1,1))
     
     which.factors = sort(which.factors)
     
@@ -240,7 +291,7 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     trL = t(x$params$Lambda)
     lw = Matrix::Matrix(trL[which.factors,which.series], sparse = TRUE)
     
-    series.names = unlist(dimnames(x$params$Lambda)[1])
+    series.names = unlist(dimnames(x$params$Lambda[which.series,])[1])
     
     if(!use.series.names){
       series.names = NULL
@@ -260,14 +311,14 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
   
   else if(type == 'loading.lineplot'){
     
-    par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
-    par(mfrow = c(1,1))
+    # par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
+    # par(mfrow = c(1,1))
     
     dots <- list(...)
     
     lw = t(x$params$Lambda)
     
-    series.names = unlist(dimnames(x$params$Lambda)[1])
+    series.names = unlist(dimnames(x$params$Lambda[which.series,])[1])
     
     if(!use.series.names){
       series.names = NULL
@@ -319,14 +370,14 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       stop("You must specify group.cols.")
     }
     
-    par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
-    par(mfrow = c(1,1))
+    # par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
+    # par(mfrow = c(1,1))
     
     dots <- list(...)
     
     lw = t(x$params$Lambda)
     
-    series.names = unlist(dimnames(x$params$Lambda)[1])
+    series.names = unlist(dimnames(x$params$Lambda[which.series,])[1])
     
     if(!use.series.names){
       series.names = NULL
@@ -371,12 +422,12 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     if(residual.type == 'scatter' && is.null(scatter.series)) stop("No series chosen in scatter.series")
     
-    par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
-    par(mfrow = c(1,1))
-    
+    # par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
+    # par(mfrow = c(1,1))
+    # 
     dots = list(...)
     
-    series.names = unlist(dimnames(x$params$Lambda)[1])
+    series.names = unlist(dimnames(x$params$Lambda[which.series,])[1])
     
     if(!use.series.names){
       series.names = NULL
@@ -416,7 +467,11 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       s.names = unlist(dimnames(resids)[2])
       scatter.series.name = if(!is.null(s.names)) s.names[scatter.series] else paste('Series',scatter.series)
       
-      plot(resids[,scatter.series], xlab = if(is.null(dots$xlab)) 'Time' else dots$xlab,
+      if(is.ts(x$data$X)){
+        resids = ts(resids, start = start(x$data$X), frequency = frequency(x$data$X))
+      }
+      
+      plot(resids[,scatter.series], type='p', xlab = if(is.null(dots$xlab)) 'Time' else dots$xlab,
            ylab = if(is.null(dots$ylab)) 'Value' else dots$ylab, 
            main = if(is.null(dots$main)) paste('Residual Scatter Plot for', scatter.series.name) else dots$main,
            cex.axis = if(is.null(dots$cex.axis)) 1.2 else dots$cex.axis, cex.main = if(is.null(dots$cex.main)) 1.2 else dots$cex.main, cex.lab = if(is.null(dots$cex.lab)) 1.2 else dots$cex.lab, pch = if(is.null(dots$main)) 20 else dots$pch) 
@@ -429,8 +484,8 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
   ## type = 'lasso.bic'
   else if(type == 'lasso.bic'){
     
-    par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
-    par(mfrow = c(1,1))
+    # par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
+    # par(mfrow = c(1,1))
     par(xpd=FALSE)
     
     dots = list(...)

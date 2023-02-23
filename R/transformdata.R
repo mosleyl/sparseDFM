@@ -15,12 +15,15 @@
 #' \code{7} \tab\tab log growth rate \eqn{(log(X_{i,t}) - log(X_{i,t-1}))/log(X_{i,t-1})}{(log(X_{i,t}) - log(X_{i,t-1}))/log(X_{i,t-1})} \cr\cr
 #' }
 #' 
+#' @importFrom stats is.ts ts start frequency 
+#' 
 #' @returns 
 #' Transformed stationary version of \eqn{\bm{X}}{X}. 
 #' 
 #' @export 
 
 transformData <- function(X, stationary_transform){
+  
   
   X = as.matrix(X)
   
@@ -67,5 +70,13 @@ transformData <- function(X, stationary_transform){
     
   }
   colnames(newX) = colnames(X)
+  
+  if(is.ts(X)){
+    
+    newX = ts(newX, start = start(X), frequency = frequency(X))
+    
+  }
+  
+  
   return(newX)
 }
