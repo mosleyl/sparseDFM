@@ -12,6 +12,7 @@ sparseDFM(
   alg = "EM-sparse",
   err = "IID",
   kalman = "univariate",
+  store.parameters = FALSE,
   standardize = TRUE,
   max_iter = 100,
   threshold = 1e-04
@@ -45,6 +46,8 @@ sparseDFM(
 \code{"multivariate"} \tab\tab classic Kalman filter and smoother equations seen in Shumway and Stoffer (1982). \cr\cr
 \code{"univaraite"} \tab\tab univariate treatment (sequential processing) of the multivariate equations for fast Kalman filter and smoother seen in Koopman and Durbin (2000). \cr\cr
 }}
+
+\item{store.parameters}{Logical. Store outputs for every alpha L1 penalty parameter. Default is FALSE.}
 
 \item{standardize}{Logical. Standardize the data before estimating the model. Default is \code{TRUE}.}
 

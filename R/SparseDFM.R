@@ -29,6 +29,7 @@
 #' \code{"multivariate"} \tab\tab classic Kalman filter and smoother equations seen in Shumway and Stoffer (1982). \cr\cr
 #' \code{"univaraite"} \tab\tab univariate treatment (sequential processing) of the multivariate equations for fast Kalman filter and smoother seen in Koopman and Durbin (2000). \cr\cr
 #' }
+#' @param store.parameters Logical. Store outputs for every alpha L1 penalty parameter. Default is FALSE.
 #' @param standardize Logical. Standardize the data before estimating the model. Default is \code{TRUE}.
 #' @param max_iter Integer. Maximum number of EM iterations. Default is 100. 
 #' @param threshold Numeric. Tolerance on EM iterates. Default is 1e-4. 
@@ -139,7 +140,7 @@
 #'  
 #' @export
 
-sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse', err = 'IID', kalman = 'univariate', standardize = TRUE, max_iter=100, threshold=1e-4) {
+sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse', err = 'IID', kalman = 'univariate', store.parameters = FALSE, standardize = TRUE, max_iter=100, threshold=1e-4) {
   
   
   ## Correct input checks
@@ -184,7 +185,6 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
   k = r + p 
   
   # standardize if TRUE 
-  X.raw = X
   X.scale = scale(X)
   X.mean = attr(X.scale, "scaled:center")
   X.sd = attr(X.scale, "scaled:scale")
@@ -192,6 +192,20 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
   if(standardize){
     X = X.scale
   }
+  
+  # Remove any columns that are entirely NA
+  numberNA = as.numeric(colSums(is.na(X)))
+  allNA = which(numberNA == n)
+  if(length(allNA) > 0){
+    X = X[,-allNA]
+    X.input = X.input[,-allNA]
+    p = dim(X)[2]
+    X.mean = X.mean[-allNA]
+    X.sd = X.sd[-allNA]
+    message('Columns: ',allNA, ' are entirely missing. Removing these columns.')
+  }
+  
+                        
   
   # label variables 
   obs.names = unlist(dimnames(X)[1])
@@ -259,7 +273,9 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   method = alg,
                                   err = err,
                                   call = match.call()),
-                      params = list(A = A,
+                      params = list(a0_0 = a0_0,
+                                    P0_0 = P0_0,
+                                    A = A,
                                     Phi = diag(Phi),
                                     Lambda = Lambda,
                                     Sigma_u = Sigma_u,
@@ -293,7 +309,9 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   method = alg,
                                   err = err,
                                   call = match.call()),
-                      params = list(A = A,
+                      params = list(a0_0 = a0_0,
+                                    P0_0 = P0_0,
+                                    A = A,
                                     Lambda = Lambda,
                                     Sigma_u = Sigma_u,
                                     Sigma_epsilon = diag(Sigma_epsilon)),
@@ -383,7 +401,9 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   method = alg,
                                   err = err,
                                   call = match.call()),
-                      params = list(A = A,
+                      params = list(a0_0 = a0_0,
+                                    P0_0 = P0_0,
+                                    A = A,
                                     Phi = diag(Phi),
                                     Lambda = Lambda,
                                     Sigma_u = Sigma_u,
@@ -424,7 +444,9 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   method = alg,
                                   err = err,
                                   call = match.call()),
-                      params = list(A = A,
+                      params = list(a0_0 = a0_0,
+                                    P0_0 = P0_0,
+                                    A = A,
                                     Lambda = Lambda,
                                     Sigma_u = Sigma_u,
                                     Sigma_epsilon = diag(Sigma_epsilon)),
@@ -533,7 +555,9 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   method = alg,
                                   err = err,
                                   call = match.call()),
-                      params = list(A = A,
+                      params = list(a0_0 = a0_0,
+                                    P0_0 = P0_0,
+                                    A = A,
                                     Phi = diag(Phi),
                                     Lambda = Lambda,
                                     Sigma_u = Sigma_u,
@@ -578,7 +602,9 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   method = alg,
                                   err = err,
                                   call = match.call()),
-                      params = list(A = A,
+                      params = list(a0_0 = a0_0,
+                                    P0_0 = P0_0,
+                                    A = A,
                                     Lambda = Lambda,
                                     Sigma_u = Sigma_u,
                                     Sigma_epsilon = diag(Sigma_epsilon)),
@@ -620,6 +646,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         bic <- c()
         num_iter = c()
         best.bic <- .Machine$double.xmax
+        alpha.output = list()
         
         for(alphas.index in 1:length(alphas)) {
           
@@ -680,6 +707,87 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
           # calculate BIC 
             
             bic[alphas.index] = bicFunction(X, t(KFS$at_n[1:r,]), Lambda.tilde[,1:r])
+            
+            
+          # Store parameters for each alpha if store.parameters = TRUE
+          
+          if(store.parameters){
+            
+            store.state = t(KFS$at_n)
+            store.cov = KFS$Pt_n
+            
+            if(err == 'AR1'){
+              
+              store.factors = store.state[,1:r]
+              store.errors = store.state[,(r+1):k]
+              
+              dimnames(store.factors) = list(obs.names, factor.names)
+              dimnames(store.errors) = list(obs.names, series.names)
+              
+              store.A = A.tilde[1:r,1:r]
+              store.Phi = A.tilde[(r+1):k,(r+1):k]
+              store.Lambda = Lambda.tilde[,1:r]
+              store.Sigma_u = Sigma.u.tilde[1:r,1:r]
+              store.Sigma_epsilon = Sigma.u.tilde[(r+1):k,(r+1):k]
+              store.factors.cov = store.cov[1:r,1:r,]
+              store.errors.cov = store.cov[(r+1):k,(r+1):k,]
+              
+              dimnames(store.A) = list(factor.names,factor.names)
+              dimnames(store.Phi) = list(series.names,series.names)
+              dimnames(store.Lambda) = list(series.names, factor.names)
+              dimnames(store.Sigma_u) = list(f.error.names, f.error.names)
+              dimnames(store.Sigma_epsilon) = list(series.names, series.names)
+              dimnames(store.factors.cov) = list(factor.names, factor.names)
+              dimnames(store.errors.cov) = list(series.names, series.names)
+              
+              alpha.output[[alphas.index]] = list(params = list(a0_0 = a0_0,
+                                                               P0_0 = P0_0,
+                                                               A = store.A,
+                                                               Phi = diag(store.Phi),
+                                                               Lambda = store.Lambda,
+                                                               Sigma_u = store.Sigma_u,
+                                                               Sigma_epsilon = diag(store.Sigma_epsilon)),
+                                                  state = list(factors = store.factors,
+                                                               errors = store.errors,
+                                                               factors.cov = store.factors.cov,
+                                                               errors.cov = store.errors.cov))
+              
+                                                  
+                                        
+            }else{
+              
+              
+              store.factors = store.state
+              
+              dimnames(store.factors) = list(obs.names, factor.names)
+              
+              store.A = A.tilde
+              store.Lambda = Lambda.tilde
+              store.Sigma_u = Sigma.u.tilde
+              store.Sigma_epsilon = Sigma.eta
+              store.factors.cov = store.cov
+              
+              dimnames(store.A) = list(factor.names,factor.names)
+              dimnames(store.Lambda) = list(series.names, factor.names)
+              dimnames(store.Sigma_u) = list(f.error.names, f.error.names)
+              dimnames(store.Sigma_epsilon) = list(series.names, series.names)
+              dimnames(store.factors.cov) = list(factor.names, factor.names)
+              
+              alpha.output[[alphas.index]] = list(params = list(a0_0 = a0_0,
+                                                                P0_0 = P0_0,
+                                                                A = store.A,
+                                                                Lambda = store.Lambda,
+                                                                Sigma_u = store.Sigma_u,
+                                                                Sigma_epsilon = diag(store.Sigma_epsilon)),
+                                                  state = list(factors = store.factors,
+                                                               factors.cov = store.factors.cov))
+              
+              
+            }
+            
+            
+            
+          }
           
           
           # store estimates if BIC improved 
@@ -703,6 +811,8 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         loglik.store = best.EM$loglik.store 
         converged = best.EM$converged 
 
+        a0_0 = best.EM$a0_0
+        P0_0 = best.EM$P0_0
         A.tilde = best.EM$A.tilde
         Lambda.tilde = best.EM$Lambda.tilde
         Sigma.u.tilde = best.EM$Sigma.u.tilde
@@ -723,6 +833,13 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         
         dimnames(fit_x) = dimnames(X)
         dimnames(fit_X) = dimnames(X)
+        
+        if(store.parameters){
+          names(alpha.output) = paste0('alpha=',round(alphas.used,4))
+        }else{
+          alpha.output = NULL
+        }
+        
         
       ## Output for EM-sparse - depends on if err = 'AR1' or 'IID'
         
@@ -761,7 +878,9 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                     method = alg,
                                     err = err,
                                     call = match.call()),
-                        params = list(A = A,
+                        params = list(a0_0 = a0_0,
+                                      P0_0 = P0_0,
+                                      A = A,
                                       Phi = diag(Phi),
                                       Lambda = Lambda,
                                       Sigma_u = Sigma_u,
@@ -777,7 +896,8 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   loglik = loglik.store,
                                   num_iter = num_iter,
                                   tol = threshold,
-                                  max_iter = max_iter))
+                                  max_iter = max_iter),
+                        alpha.output = alpha.output)
 
           
         }else {
@@ -809,7 +929,9 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                     method = alg,
                                     err = err,
                                     call = match.call()),
-                        params = list(A = A,
+                        params = list(a0_0 = a0_0,
+                                      P0_0 = P0_0,
+                                      A = A,
                                       Lambda = Lambda,
                                       Sigma_u = Sigma_u,
                                       Sigma_epsilon = diag(Sigma_epsilon)),
@@ -822,7 +944,8 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   loglik = loglik.store,
                                   num_iter = num_iter,
                                   tol = threshold,
-                                  max_iter = max_iter))
+                                  max_iter = max_iter),
+                        alpha.output = alpha.output)
           
           
         }
