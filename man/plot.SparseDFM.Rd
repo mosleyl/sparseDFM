@@ -26,6 +26,7 @@
   residual.type = "boxplot",
   scatter.series = 1,
   min.bic.col = "red",
+  alpha_index = "best",
   ...
 )
 }
@@ -71,6 +72,8 @@
 \item{scatter.series}{integer. The series to plot when \code{residual.type} = \code{"scatterplot"}. Default is series 1.}
 
 \item{min.bic.col}{character. Colour for the best \eqn{\alpha}{\alpha} point. Default is \code{'red'}.}
+
+\item{alpha_index}{Choose which L1 penalty parameter to display the results for. Default is 'best'. Otherwise, input a number between 1:length(alpha_grid) that indicates the required alpha parameter.}
 
 \item{\dots}{for \code{plot.sparseDFM}. Further plot arguments.}
 }

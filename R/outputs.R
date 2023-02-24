@@ -115,6 +115,7 @@ summary.sparseDFM <- function(object,...){
 #' @param residual.type character. The type of residual plot: \code{"boxplot"} or \code{"scatterplot"}. Default is \code{"boxplot"}.
 #' @param scatter.series integer. The series to plot when \code{residual.type} = \code{"scatterplot"}. Default is series 1. 
 #' @param min.bic.col character. Colour for the best \eqn{\alpha}{\alpha} point. Default is \code{'red'}.
+#' @param alpha_index Choose which L1 penalty parameter to display the results for. Default is 'best'. Otherwise, input a number between 1:length(alpha_grid) that indicates the required alpha parameter. 
 #' @param \dots for \code{plot.sparseDFM}. Further plot arguments. 
 #' 
 #' @returns 
@@ -133,7 +134,7 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
                            which.series = 1:(dim(x$params$Lambda)[1]), loading.factor = 1, series.col = 'grey',
                            factor.col = 'black', factor.lwd = 2, factor.lab = NULL, use.series.names = FALSE, series.lab = NULL,
                            series.labpos = NULL,colorkey = TRUE, col.regions = NULL, group.names = NULL, group.cols = NULL,
-                           group.legend = TRUE, residual.type = 'boxplot', scatter.series = 1, min.bic.col = 'red', ...){
+                           group.legend = TRUE, residual.type = 'boxplot', scatter.series = 1, min.bic.col = 'red', alpha_index = 'best', ...){
   
   # check correct type input 
   
@@ -160,10 +161,15 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       data = scale(x$data$X.bal)
     }
     
-    if(scale.factors){
-      factors = scale(x$state$factors)
-    }else{
+    if(alpha_index == 'best'){
       factors = x$state$factors
+    }else{
+      alpha_out = x$alpha.output[[alpha_index]]
+      factors = alpha_out$state$factors
+    }
+    
+    if(scale.factors){
+      factors = scale(factors)
     }
     
     r = dim(factors)[2]
@@ -288,7 +294,13 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       
     }
     
-    trL = t(x$params$Lambda)
+    if(alpha_index == 'best'){
+      trL = t(x$params$Lambda)
+    }else{
+      alpha_out = x$alpha.output[[alpha_index]]
+      trL = t(alpha_out$params$Lambda)
+    }
+    
     lw = Matrix::Matrix(trL[which.factors,which.series], sparse = TRUE)
     
     series.names = unlist(dimnames(x$params$Lambda[which.series,])[1])
@@ -316,8 +328,13 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     dots <- list(...)
     
-    lw = t(x$params$Lambda)
-    
+    if(alpha_index == 'best'){
+      lw = t(x$params$Lambda)
+    }else{
+      alpha_out = x$alpha.output[[alpha_index]]
+      lw = t(alpha_out$params$Lambda)
+    }
+
     series.names = unlist(dimnames(x$params$Lambda[which.series,])[1])
     
     if(!use.series.names){
@@ -375,8 +392,13 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     dots <- list(...)
     
-    lw = t(x$params$Lambda)
-    
+    if(alpha_index == 'best'){
+      lw = t(x$params$Lambda)
+    }else{
+      alpha_out = x$alpha.output[[alpha_index]]
+      lw = t(alpha_out$params$Lambda)
+    }
+
     series.names = unlist(dimnames(x$params$Lambda[which.series,])[1])
     
     if(!use.series.names){
@@ -433,8 +455,15 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       series.names = NULL
     }
     
+    if(alpha_index == 'best'){
+      Xfit = x$data$fitted
+    }else{
+      alpha_out = x$alpha.output[[alpha_index]]
+      Xfit = alpha_out$state$factors %*% t(alpha_out$params$Lambda)
+    }
+     
     
-    resids = x$data$X.bal - x$data$fitted
+    resids = x$data$X.bal - Xfit
     resids = resids[,which.series]
     
     if(residual.type=='boxplot'){
@@ -531,6 +560,7 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
 #' 
 #' @param object an object of class 'sparseDFM'.
 #' @param standardize logical. The residuals and fitted values should be standardized. Default is \code{FALSE}, values returned in the original data \eqn{\bm{X}}{X} scale.
+#' @param alpha_index Choose which L1 penalty parameter to display the results for. Default is 'best'. Otherwise, input a number between 1:length(alpha_grid) that indicates the required alpha parameter. 
 #' @param \dots Further \code{fitted} arguments.
 #' 
 #' @return Residuals or fitted values of \code{sparseDFM}.
@@ -539,12 +569,31 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
 #' @export
 
 
-fitted.sparseDFM <- function(object, standardize = FALSE,...){
+fitted.sparseDFM <- function(object, standardize = FALSE, alpha_index = 'best', ...){
   
-  if(standardize){
-    return(object$data$fitted)
+  if(alpha_index == 'best'){
+    
+    if(standardize){
+      return(object$data$fitted)
+    }else{
+      return(object$data$fitted.unscaled)
+    }
+    
   }else{
-    return(object$data$fitted.unscaled)
+    
+    alpha_out = object$alpha.output[[alpha_index]]
+    Xfit = alpha_out$state$factors %*% t(alpha_out$params$Lambda)
+    X.sd = object$data$X.sd
+    X.mean = object$data$X.mean
+    n = dim(object$data$X.bal)[1]
+    Xfit.unscaled = kronecker(t(X.sd),rep(1,n))*Xfit + kronecker(t(X.mean),rep(1,n))
+    
+    if(standardize){
+      return(Xfit)
+    }else{
+      return(Xfit.unscaled)
+    }
+    
   }
   
 }
@@ -554,19 +603,42 @@ fitted.sparseDFM <- function(object, standardize = FALSE,...){
 #' 
 #' @param object an object of class 'sparseDFM'.
 #' @param standardize logical. The residuals and fitted values should be standardized. Default is \code{FALSE}, values returned in the original data \eqn{\bm{X}}{X} scale.
+#' @param alpha_index Choose which L1 penalty parameter to display the results for. Default is 'best'. Otherwise, input a number between 1:length(alpha_grid) that indicates the required alpha parameter. 
 #' @param \dots Further \code{residuals} arguments.
 #' 
 #' @export
 
-residuals.sparseDFM <- function(object, standardize = FALSE,...){
+residuals.sparseDFM <- function(object, standardize = FALSE, alpha_index = 'best', ...){
   
-  if(standardize){
-    res = object$data$X.bal - object$data$fitted
+  if(alpha_index == 'best'){
+    
+    if(standardize){
+      res = object$data$X.bal - object$data$fitted
+    }else{
+      n = dim(object$data$X.bal)[1]
+      X.bal_raw = kronecker(t(object$data$X.sd),rep(1,n))*object$data$X.bal + kronecker(t(object$data$X.mean),rep(1,n))
+      res = X.bal_raw - object$data$fitted.unscaled
+    }
+    
   }else{
+    
+    alpha_out = object$alpha.output[[alpha_index]]
+    Xfit = alpha_out$state$factors %*% t(alpha_out$params$Lambda)
+    X.sd = object$data$X.sd
+    X.mean = object$data$X.mean
     n = dim(object$data$X.bal)[1]
-    X.bal_raw = kronecker(t(object$data$X.sd),rep(1,n))*object$data$X.bal + kronecker(t(object$data$X.mean),rep(1,n))
-    res = X.bal_raw - object$data$fitted.unscaled
+    Xfit.unscaled = kronecker(t(X.sd),rep(1,n))*Xfit + kronecker(t(X.mean),rep(1,n))
+    
+    if(standardize){
+      res = object$data$X.bal - Xfit
+    }else{
+      n = dim(object$data$X.bal)[1]
+      X.bal_raw = kronecker(t(object$data$X.sd),rep(1,n))*object$data$X.bal + kronecker(t(object$data$X.mean),rep(1,n))
+      res = X.bal_raw - Xfit.unscaled
+    }
+    
   }
+  
   return(res)
   
 }
@@ -584,6 +656,7 @@ residuals.sparseDFM <- function(object, standardize = FALSE,...){
 #' @param object an object of class 'sparseDFM'.
 #' @param h integer. The number of steps ahead to compute the forecast for. Default is \eqn{h=1}{h=1}.
 #' @param standardize logical. Returns data series forecasts in the original data scale if set to \code{FALSE}. Default is \code{FALSE}. 
+#' @param alpha_index Choose which L1 penalty parameter to display the results for. Default is 'best'. Otherwise, input a number between 1:length(alpha_grid) that indicates the required alpha parameter. 
 #' @param \dots Further \code{predict} arguments.
 #' 
 #' @return X_hat \eqn{h \times p}{h x p} numeric matrix of data series forecasts.
@@ -594,20 +667,42 @@ residuals.sparseDFM <- function(object, standardize = FALSE,...){
 #' 
 #' @export
 
-predict.sparseDFM <- function(object, h = 1, standardize = FALSE,...){
+predict.sparseDFM <- function(object, h = 1, standardize = FALSE, alpha_index = 'best', ...){
   
-  A = object$params$A
-  Lambda = object$params$Lambda
-  n = dim(object$state$factors)[1]
-  r = dim(object$state$factors)[2]
-  p = dim(object$data$X.bal)[2]
-  F_old = object$state$factors[n,]
-  
-  if(object$data$err == 'AR1'){
-    Phi = object$params$Phi
-    e_old = object$state$errors
-    e_new = matrix(NA, nrow = h, ncol = p)
+  if(alpha_index == 'best'){
+    
+    A = object$params$A
+    Lambda = object$params$Lambda
+    n = dim(object$state$factors)[1]
+    r = dim(object$state$factors)[2]
+    p = dim(object$data$X.bal)[2]
+    F_old = object$state$factors[n,]
+    
+    if(object$data$err == 'AR1'){
+      Phi = object$params$Phi
+      e_old = object$state$errors
+      e_new = matrix(NA, nrow = h, ncol = p)
+    }
+    
+  }else{
+    
+    alpha_out = object$alpha.output[[alpha_index]]
+    
+    A = alpha_out$params$A
+    Lambda = alpha_out$params$Lambda
+    n = dim(alpha-out$state$factors)[1]
+    r = dim(alpha_out$state$factors)[2]
+    p = dim(object$data$X.bal)[2]
+    F_old = alpha_out$state$factors[n,]
+    
+    if(object$data$err == 'AR1'){
+      Phi = alpha_out$params$Phi
+      e_old = alpha_out$state$errors
+      e_new = matrix(NA, nrow = h, ncol = p)
+    }
+    
   }
+  
   
   F_new = matrix(NA, nrow = h, ncol = r)
   X_new = matrix(NA, nrow = h, ncol = p)

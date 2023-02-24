@@ -5,7 +5,7 @@
 \alias{print.sparseDFM_forecast}
 \title{Forecasting factor estimates and data series.}
 \usage{
-\method{predict}{sparseDFM}(object, h = 1, standardize = FALSE, ...)
+\method{predict}{sparseDFM}(object, h = 1, standardize = FALSE, alpha_index = "best", ...)
 
 \method{print}{sparseDFM_forecast}(x, ...)
 }
@@ -15,6 +15,8 @@
 \item{h}{integer. The number of steps ahead to compute the forecast for. Default is \eqn{h=1}{h=1}.}
 
 \item{standardize}{logical. Returns data series forecasts in the original data scale if set to \code{FALSE}. Default is \code{FALSE}.}
+
+\item{alpha_index}{Choose which L1 penalty parameter to display the results for. Default is 'best'. Otherwise, input a number between 1:length(alpha_grid) that indicates the required alpha parameter.}
 
 \item{\dots}{Further \code{print} arguments.}
 

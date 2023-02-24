@@ -6,14 +6,16 @@
 \alias{resid.sparseDFM}
 \title{sparseDFM Residuals and Fitted Values}
 \usage{
-\method{fitted}{sparseDFM}(object, standardize = FALSE, ...)
+\method{fitted}{sparseDFM}(object, standardize = FALSE, alpha_index = "best", ...)
 
-\method{residuals}{sparseDFM}(object, standardize = FALSE, ...)
+\method{residuals}{sparseDFM}(object, standardize = FALSE, alpha_index = "best", ...)
 }
 \arguments{
 \item{object}{an object of class 'sparseDFM'.}
 
 \item{standardize}{logical. The residuals and fitted values should be standardized. Default is \code{FALSE}, values returned in the original data \eqn{\bm{X}}{X} scale.}
+
+\item{alpha_index}{Choose which L1 penalty parameter to display the results for. Default is 'best'. Otherwise, input a number between 1:length(alpha_grid) that indicates the required alpha parameter.}
 
 \item{\dots}{Further \code{residuals} arguments.}
 }
