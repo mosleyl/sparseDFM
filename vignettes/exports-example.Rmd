@@ -1,0 +1,364 @@
+---
+title: "Using sparseDFM - Nowcasting UK Trade in Goods (Exports)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using sparseDFM - Nowcasting UK Trade in Goods (Exports)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.width = 7,
+  fig.height = 5,
+  comment = "#>"
+)
+```
+
+Load the *sparseDFM* package and exports dataframe into R. We also require the *gridExtra* package for this vignette.
+```{r setup, message = FALSE, warning = FALSE}
+library(sparseDFM)
+library(gridExtra)
+data <- exports 
+```
+
+This vignette provides a tutorial on how to apply the package *sparseDFM* onto a large-scale data set for the purpose of **nowcasting UK trade in goods**. The data contains 445 columns, including 9 target series (UK exports of the 9 main commodities worldwide) and 434 monthly indicator series, and 226 rows representing monthly values from January 2004 to October 2022. For a small-scale example see the vignette `inflation-example`.
+
+## Introduction 
+
+**Nowcasting**^[For a detailed survey on the nowcasting literature see: Bańbura, M., Giannone, D., Modugno, M., & Reichlin, L. (2013). Now-casting and the real-time data flow. In Handbook of economic forecasting (Vol. 2, pp. 195-237). Elsevier.] **is a method used in econometrics that involves estimating the current state of the economy based on the most recent data available.** It is an important tool because it allows policy makers and businesses to make more informed decisions in real-time, rather than relying on outdated information due to publication delays that may no longer be accurate. Trade in Goods (imports and exports) is currently published with a **2 month lag** by the UK's Office for National Statistics (ONS), which is quite a long time to wait for current assessments of trade, especially during times of economic uncertainty or instability. Nowcasting UK trade information has become particularly important in recent years due to the key events of the **Brexit referendum**, held in 2016, and the **coronavirus pandemic**, reaching UK shores early 2020. While the cause of these shocks are drastically different, both have imposed restrictions on trade in goods. 
+
+We consider the task of understanding and nowcasting the movements of **9 monthly target series** representing 9 of the main commodities the UK exports worldwide. These include:
+
+* **Food & live animals**
+* **Beverages and tobacco**
+* **Crude materials**
+* **Fuels**
+* **Animal and vegetable oils and fats**
+* **Chemicals**
+* **Material manufactures**
+* **Machinery and transport**
+* **Miscellaneous manufactures**
+
+These target series are released with a 2 month publication delay and hence the last two rows of the dataframe for these variables are missing. To try and estimate the targets in these months, we use a large collection of **434 monthly indicator series** including:
+
+* **Index of Production (IoP)** - Movements in the volume of production for the UK production industries - *2 month lag* - *89 series*
+* **Consumer Price Inflation (CPI)** - The rate at which the prices of goods and services bought by households rise or fall - *1 month lag* - *166 series*
+* **Producer Price Inflation (PPI)** - Changes in the prices of goods bought and sold by UK manufacturers - *1 month lag* - *153 series*
+* **Exchange rates** - Sterling exchange rates with 12 popular currencies - *1 month lag* - *12 series*
+* **Business confidence Index (BCI)** - Opinion surveys on developments in production, orders and stocks of finished goods in the industry sector - *1 month lag* - *1 series*
+* **Consumer Confidence Index (CCI)** - Opinion surveys on future developments of households’ consumption and saving - *1 month lag* - *1 series*
+* **Google Trends (GT)** - Popularity scores of 14 google search queries related to trade in goods - *real-time* - *14 series*
+
+The first part of this vignette uses the `sparseDFM()` function to fit a regular DFM and a Sparse DFM to the entire dataset of January 2004 to October 2022 with the goal of estimating the missing target series data in September and October of 2022. We explore the `plot()` and `predict()` capabilities of the package and assess the benefit of a sparse DFM in terms of interpreting factor structure and accuracy of predictions. In the second part of the vignette we give an example of how to set up a pseudo-real-time nowcasting exercise to nowcast the 2 month end-of-sample missing data for the targets in an expanding window from August 2018 to July 2022. 
+
+## Exploring the Data 
+
+Before we fit any models it is first worthwhile to perform some exploratory data analysis to assess stationarity and missing data.  
+
+```{r}
+# Dimension of the data: n = 226, p = 445.
+dim(data)
+
+# Plot the 9 target series using ts.plot with a legend on the right 
+def.par <- par(no.readonly = TRUE) # initial graphic parameters 
+goods <- data[,1:9]
+layout(matrix(c(1,2),nrow=1), width=c(4,3)) 
+par(mar=c(5,4,4,0)) 
+ts.plot(goods, gpars= list(col=10:1,lty=1:10))
+par(mar=c(5,0,4,2)) 
+plot(c(0,1),type="n", axes=F, xlab="", ylab="")
+legend("center", legend = colnames(goods), col = 10:1, lty = 1:10, cex = 0.7)
+par(def.par) # reset graphic parameters to initial
+```
+
+This plot provides us with the monthly dynamics of UK exports worldwide for 9 categories of goods. We see exports of machinery and transport being the largest. We also see two main drops during the 2009 and 2020 recessions and an upwards trend in the past year or so. 
+
+The only missing data present in the data is at the end of the sample during the months of September and October 2022 depending on publication delays of the variables. We can see this ragged edge^[At the end of the sample, different variables will have missing points corresponding to different dates in accordance with their publication release. This forms a ragged edge structure at the end of the sample.] structure at the end of the sample by zooming in on the past 12 months:
+
+```{r}
+# last 12 months 
+data_last12 = tail(data, 12)
+
+# Missing data plot. Too many variable names so use.names is set to FALSE for clearer output.
+missing_data_plot(data_last12, use.names = FALSE)
+```
+
+We see the 2 month delay for the targets and IoP, the 1 month delay for CPI, PPI, exchange rates, BCI and CCI, and no delay for google trends. We hope to exploit this available data when predicting September and October 2022. 
+
+## Fitting the Models 
+
+We first make the data stationary by simply taking first-differences like so:
+```{r}
+# first-differences correspond to stationary_transform set to 2 for each series
+new_data = transformData(data, stationary_transform = rep(2,ncol(data)))
+```
+
+We now tune for the number of factors to use:
+```{r}
+tuneFactors(new_data)
+```
+
+According to the Bai and Ng (2002)^[Bai, J., & Ng, S. (2002). Determining the number of factors in approximate factor models. *Econometrica, 70*(1), 191-221.] information criteria, the best number of factors to use is 7. However, the screeplot seems to sugest that after 4 factors, the addition of more factors does not add that much in terms of explaining the variance of the data. For this reason, we choose to use 4 factors when modelling. 
+
+We now fit a regular DFM and a Sparse DFM to the data with 4 factors:
+```{r, cache = TRUE}
+# Regular DFM fit - takes around 18 seconds 
+fit.dfm <- sparseDFM(new_data, r = 4, alg = 'EM')
+
+# Sparse DFM fit - takes around 2 mins to tune 
+# set q = 9 as the first 9 variables (targets) should not be regularised
+# L1 penalty grid set to logspace(0.4,1,15) after exploration
+fit.sdfm <- sparseDFM(new_data, r = 4, q = 9, alg = 'EM-sparse', alphas = logspace(0.4,1,15))
+```
+
+We can explore the convergence and tuning of each algorithm like so:
+```{r}
+# Number of iterations the DFM took to converge
+fit.dfm$em$num_iter
+
+# Number of iterations the Sparse DFM took to converge at each L1 norm penalty 
+fit.sdfm$em$num_iter
+
+# Optimal L1 norm penalty chosen
+fit.sdfm$em$alpha_opt
+
+# Plot of BIC values for each L1 norm penalty 
+plot(fit.sdfm, type = 'lasso.bic')
+```
+
+## Estimated Factor Structure 
+
+We first explore the estimated factors and loadings for the regular DFM. We are able to group the indicator series into colours depending on the source of the indicator and use the `type = "loading.grouplineplot"` setting in `plot()`. We set the trade in goods (TiG) target black, IoP blue, CPI red, PPI pink, exchange rate (Exch) green, BCI & CCI (Conf) navy and google trends (GT) brown. This will make it easier to visualise which indicators are loading onto specific factors. 
+
+```{r}
+## Plot the estimated factors for the DFM
+plot(fit.dfm, type = 'factor')
+
+## Plot the estimated loadings for each of the 4 factors in a grid 
+
+# Specify the name of the group each indicator belongs too
+groups = c(rep('TiG',9), rep('IoP',89), rep('CPI',166), rep('PPI',153),
+           rep('Exch',12), rep('Conf',2), rep('GT',14))
+
+# Specify the colours for each of the groups 
+group_cols = c('black','blue','red','pink','green','navy','brown')
+
+# Plot the group lineplot in a 2 x 2 grid 
+p1 = plot(fit.dfm, type = 'loading.grouplineplot', loading.factor = 1, group.names = groups, group.cols = group_cols)
+p2 = plot(fit.dfm, type = 'loading.grouplineplot', loading.factor = 2, group.names = groups, group.cols = group_cols)
+p3 = plot(fit.dfm, type = 'loading.grouplineplot', loading.factor = 3, group.names = groups, group.cols = group_cols)
+p4 = plot(fit.dfm, type = 'loading.grouplineplot', loading.factor = 4, group.names = groups, group.cols = group_cols)
+
+grid.arrange(p1, p2, p3, p4, nrow = 2)
+
+```
+
+As all variables are loaded onto all the factors in a regular DFM it is very difficult to interpret the factor structure from these loading plots. The loadings from all groups in every factor are quite large and it is impossible to make conclusions on which data groups are related to specific factors. For greater interpretation we can fit a Sparse DFM instead and hope to induce sparsity on the loadings Let us now observe the factors and loading structure of the Sparse DFM:
+
+```{r}
+## Plot the estimated factors for the Sparse DFM
+plot(fit.sdfm, type = 'factor')
+
+## Plot the estimated loadings for each of the 4 factors in a grid 
+
+# Plot the group lineplot in a 2 x 2 grid 
+p1 = plot(fit.sdfm, type = 'loading.grouplineplot', loading.factor = 1, group.names = groups, group.cols = group_cols)
+p2 = plot(fit.sdfm, type = 'loading.grouplineplot', loading.factor = 2, group.names = groups, group.cols = group_cols)
+p3 = plot(fit.sdfm, type = 'loading.grouplineplot', loading.factor = 3, group.names = groups, group.cols = group_cols)
+p4 = plot(fit.sdfm, type = 'loading.grouplineplot', loading.factor = 4, group.names = groups, group.cols = group_cols)
+
+grid.arrange(p1, p2, p3, p4, nrow = 2)
+
+```
+
+This time with sparse factor loadings we are able to make a lot clearer conclusions on factor structure. We can clearly visualise which indicator series are the driving force between each factor. Factor 2 for example, with the obvious drop in early 2020 due to the covid pandemic, is heavily loaded with indicators coming from the Index of Production, confidence indices and google trends. Index of Production does not actually appear in any other factors and we can view this as a clear indicator of the covid drop. It is interesting that google search words to do with trade in goods are present in factor 2 as well. With lots of economic volatility in recent years, using google trends search words may be a very useful indicator of economic activity. Factor 1 seems to be mainly loaded with PPI data, while factor 3 is heavily loaded with CPI data. Some inflation data and exchange rate indicators are present in factor 4, which seems to have shocks during the 2009 and 2020 recessions. Note that in all 4 factor loading plots the trade in goods target series are loaded as we specified `q = 9` in the `sparseDFM` fit to ensure these variables are not regularised. 
+
+## Nowcasts 
+
+It is very easy to extract nowcasts from the `sparseDFM` fit. As the data was inputted with the ragged edge structure, with NAs coded in for September and October 2022 for the target series, the `sparseDFM` output will provide us with estimates for these missing months. There are two ways you can extract these values:
+
+```{r}
+## DFM nowcasts (on the differenced data)
+
+# directly from fit.dfm 
+dfm.nowcasts = tail(fit.dfm$data$fitted.unscaled[,1:9],2)
+
+# is the same as from fitted()
+dfm.nowcasts = tail(fitted(fit.dfm)[,1:9],2)
+
+## Sparse DFM nowcasts (on the differenced data)
+
+sdfm.nowcasts = tail(fit.sdfm$data$fitted.unscaled[,1:9],2)
+```
+
+To transform these first-differenced-nowcasts into nowcasts on the original level data, we need to undifference. To do this we can take the most recent observed value (August 2022) and add the September first-difference-nowcast for the September level nowcast, and then add the October first-difference-nowcast to this value to get the October level nowcast:
+
+```{r}
+## August 2022 figures for targets 
+
+obs_aug22 = tail(data,3)[1,1:9]
+
+## DFM nowcast for original level 
+
+dfm_sept_nowcast = obs_aug22 + dfm.nowcasts[1,]
+dfm_oct_nowcast = dfm_sept_nowcast + dfm.nowcasts[2,]
+
+## Sparse DFM nowcast for original level 
+
+sdfm_sept_nowcast = obs_aug22 + sdfm.nowcasts[1,]
+sdfm_oct_nowcast = sdfm_sept_nowcast + sdfm.nowcasts[2,]
+
+# Print 
+cbind(dfm_sept_nowcast,
+dfm_oct_nowcast,
+sdfm_sept_nowcast,
+sdfm_oct_nowcast)
+```
+
+## Pseudo Real-Time Nowcasting Exercise 
+
+We have fitted a regular DFM and a Sparse DFM to the trade in goods data above, but how do we know which one to use? We can set up a pseudo real-time nowcasting exercise where we try and predict the missing ragged edge in an expanding window from August 2018 to July 2022. As it would be difficult to store all previous vintages of data back to 2018, we just use the complete data set (up to October 2022) and at each nowcasting window create a ragged edge following the 2 month lag for the targets and IoP and 1 month lag for everything else except google trends. We begin with the window Jan 2004 - Aug 2018, where the current available target exports data is June 2018. We produce nowcasts for July 2018 (representing a nowcast 1 month prior to release) and for August 2018 (representing a nowcast 2 months prior to release). We produce these nowcasts for horizon 1 and 2 for every month up to July 2022 - a total of 48 months. The pseudo real-time nowcast can be coded as shown below. Note, we fit a new model at each nowcasting window and re-tune for the best L1-norm penalty parameter. An alternative could be to store the model parameters estimated from one fit of the SDFM to a particular time window and then just run the `kalmanUnivariate()` function on these stored parameters at each time window. As the nowcasting loop below takes some time to finish, we have stored the results of the fits in the rda files *exports_DFM_fit* and *exports_SDFM_fit* and present how to access these results. 
+
+```{r, eval = FALSE}
+## Start and end dates 
+start_date <- as.Date("2018/08/01")
+end_date = as.Date("2022/07/01")
+
+## Generating range of dates
+range <- seq(start_date, end_date,"months")
+
+## Ragged edge variable information (match to column variables)
+# 98 series with 2 month lag (targets,IoP)
+# 333 series with 1 month lag (CPI,PPI,exchange,conf)
+# 14 series with 0 month lag (google trends)
+ragged_edge_values = c(rep(2,98), rep(1,333), rep(0,14))
+
+## Remove missing jan 2004 and make time series from Feb 2004
+new_data = new_data[-1,]
+new_data = ts(new_data, start = c(2004,2), frequency = 12)
+
+## Expanding window nowcasting loop and store the DFM and SDFM fits
+fit.dfm <- fit.sdfm <- list()
+
+for(t in 1:length(range)){
+  
+  date = range[t]
+  date.year = as.numeric(format(date, "%Y"))
+  date.month = as.numeric(format(date, "%m"))
+  
+  Y = window(new_data, end = c(date.year, date.month))
+  Y = raggedEdge(Y, ragged_edge_values)
+  
+  fit.dfm[[t]] <- sparseDFM(Y, r = 4, alg = 'EM')
+  fit.sdfm[[t]] <- sparseDFM(Y, r = 4, q = 9, alg = 'EM-sparse')
+  
+}
+
+```
+
+We have stored these results in the rda files: *exports_DFM_fit* and *exports_SDFM_fit*. We access these results and compute error metrics like so:
+
+```{r}
+## Load the stored model fits into R
+
+dfm <- exports_DFM_fit
+sdfm <- exports_SDFM_fit
+
+## Get the original data in levels for the targets (with Jan 2004 removed)
+
+data_exports = data[-1,]
+data_exports = data_exports[,1:9]
+
+## Compute errors for the DFM fits at horizon 1 and 2 for each nowcasting window
+
+# n = 175 represents August 2018 (for the 1st nowcasting window)
+n = 175
+
+err1.dfm = err2.dfm = c()
+
+for(t in 1:48){
+  
+  # extract nowcasts for horizon 1 and 2 of the targets 
+  hor1 = dfm[[t]]$data$fitted.unscaled[n-1,1:9]
+  hor2 = dfm[[t]]$data$fitted.unscaled[n,1:9]
+  
+  # true data 
+  data.obs = data_exports[n-2,]
+  
+  # nowcasts 
+  for1 = data.obs + hor1 
+  for2 = for1 + hor2
+  
+  # mean absolute error
+  err1.dfm[t] = mean(abs(for1 - data_exports[n-1,]))
+  err2.dfm[t] = mean(abs(for2 - data_exports[n,]))
+  
+  # move window along a month 
+  n = n + 1 
+}
+
+## Compute errors for the Sparse DFM fits at horizon 1 and 2 for each nowcasting window
+
+# n = 175 represents August 2018 (for the 1st nowcasting window)
+n = 175
+err1.sdfm = err2.sdfm = c()
+
+for(t in 1:48){
+  
+  # extract nowcasts for horizon 1 and 2 of the targets 
+  hor1 = sdfm[[t]]$data$fitted.unscaled[n-1,1:9]
+  hor2 = sdfm[[t]]$data$fitted.unscaled[n,1:9]
+  
+  # true data 
+  data.obs = data_exports[n-2,]
+  
+  # nowcasts 
+  for1 = data.obs + hor1 
+  for2 = for1 + hor2
+  
+  # mean absolute error
+  err1.sdfm[t] = mean(abs(for1 - data_exports[n-1,]))
+  err2.sdfm[t] = mean(abs(for2 - data_exports[n,]))
+  
+  # move window along a month 
+  n = n + 1 
+}
+```
+
+
+We can now present results on the accuracy at 1 and 2 month horizons for both models. We work out quantiles and an average across all 48 months in the nowcasting expanding window for both horizons. 
+
+```{r}
+## Quantiles
+
+# DFM horizon 1 
+quantile(err1.dfm)
+
+# Sparse DFM horizon 1
+quantile(err1.sdfm)
+
+# DFM horizon 2
+quantile(err2.dfm)
+
+# Sparse DFM horizon 2
+quantile(err2.sdfm)
+
+## Average 
+
+# DFM horizon 1 
+mean(err1.dfm)
+
+# Sparse DFM horizon 1
+mean(err1.sdfm)
+
+# DFM horizon 2
+mean(err2.dfm)
+
+# Sparse DFM horizon 2
+mean(err2.sdfm)
+```
+
+The results show that Sparse DFM is performing better than a regular DFM in this nowcasting exercise for trade in goods. It has a lower average mean absolute error and tighter bands around the median. As expected, the error for horizon 1 is slightly lower than horizon 1 as it is able to exploit all indicators with a 1 month lag in its estimation.
+

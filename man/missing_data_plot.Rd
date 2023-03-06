@@ -4,7 +4,12 @@
 \alias{missing_data_plot}
 \title{Plot the missing data in a data matrix/frame}
 \usage{
-missing_data_plot(data, present.colour = "grey80", missing.colour = "grey20")
+missing_data_plot(
+  data,
+  present.colour = "grey80",
+  missing.colour = "grey20",
+  use.names = TRUE
+)
 }
 \arguments{
 \item{data}{Numeric matrix or data frame with NA for missing values.}
@@ -12,6 +17,8 @@ missing_data_plot(data, present.colour = "grey80", missing.colour = "grey20")
 \item{present.colour}{The colour for data that is present. Default is 'grey80'.}
 
 \item{missing.colour}{The colour for data that is missing. Default is 'grey20'.}
+
+\item{use.names}{Logical. Label the axis with data variables names. Default is TRUE. Set to FALSE to remove.}
 }
 \description{
 Visualise the amount of missing data in a data matrix or data frame.

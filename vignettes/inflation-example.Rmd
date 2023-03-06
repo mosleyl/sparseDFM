@@ -16,21 +16,21 @@ knitr::opts_chunk$set(
 )
 ```
 
+Load the *sparseDFM* package and inflation dataframe into R:
 ```{r setup, message = FALSE}
 library(sparseDFM)
+data <- inflation 
 ```
 
 This vignette provides a tutorial on how to apply the package *sparseDFM* onto a small subset of quarterly CPI (consumer price inflation) index data for the UK taken from the Office from National Statistics' (ONS) website^[Data source: <https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceindices>]. The data contains 36 variables of different classes of the inflation index and 135 observations from 1989 Q1 to 2022 Q3^[The data is from the Q4 2022 release and is benchmarked to 2015=100]. 
 
-The purpose of this small, 36 variable example is to demonstrate the core functionality and the ability to graphically display results with the *sparseDFM* package. For a larger scale example, see the *Nowcasting Trade in Goods* vignette, that aims to track monthly movements of UK Trade in Goods data using a high-dimensional set of indicators. 
+The purpose of this small, 36 variable example is to demonstrate the core functionality and the ability to graphically display results with the *sparseDFM* package. For a larger scale example, see the `exports-example` vignette, that aims to track monthly movements of UK Trade in Goods (exports) data using a high-dimensional set of indicators. 
 
 ## Exploring the Data 
 
 Before we fit a model it is first worthwhile to perform some exploratory data analysis. Two main properties to look out for when working with dynamic factor models are the amount of missing data present in the data and if the data series are stationary or not. The function `missing_data_plot()` allows the user to visualise where missing data is present. The function `transformData()` allows the user to apply a stationary transformation to the data. It contains the parameter `stationary_transform = ` options of: 1 for no change, 2 for first difference, 3 for second difference, 4 for log first difference, 5 for log second difference, 6 for growth rate and 7 for log growth rate. 
 
 ```{r}
-# load inflation data 
-data = inflation 
 # n = 135, p = 36
 dim(data)
 # Names of inflation variables 

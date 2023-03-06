@@ -788,12 +788,13 @@ print.sparseDFM_forecast <- function(x,...){
 #' @param data Numeric matrix or data frame with NA for missing values.
 #' @param present.colour The colour for data that is present. Default is 'grey80'.
 #' @param missing.colour The colour for data that is missing. Default is 'grey20'.
+#' @param use.names Logical. Label the axis with data variables names. Default is TRUE. Set to FALSE to remove. 
 #' 
 #' @importFrom ggplot2 ggplot geom_raster aes theme_minimal theme element_text labs scale_y_reverse guides scale_fill_manual scale_x_discrete 
 #' 
 #' @export 
 
-missing_data_plot <- function(data, present.colour = 'grey80', missing.colour = 'grey20'){
+missing_data_plot <- function(data, present.colour = 'grey80', missing.colour = 'grey20', use.names = TRUE){
   
   x = as.data.frame(data)
   na.x = is.na(x)
@@ -807,6 +808,8 @@ missing_data_plot <- function(data, present.colour = 'grey80', missing.colour = 
   obs = rep(1:nrow(x), each = ncol(x))
   
   newdat = data.frame(obs, variables, value)
+  
+  if(use.names == TRUE){
   
    ggplot(data = newdat,aes(x = variables, y = obs)) +
     geom_raster(aes(fill = value)) +
@@ -833,6 +836,32 @@ missing_data_plot <- function(data, present.colour = 'grey80', missing.colour = 
       limits = names(x),
       labels = names(x)
     )
+  }else{
+    
+    ggplot(data = newdat,aes(x = variables, y = obs)) +
+      geom_raster(aes(fill = value)) +
+      theme_minimal() +
+      theme(axis.text.x=element_blank()) +
+      labs(x = "",y = "Observations") +
+      scale_y_reverse() +
+      guides(colour = "none") + 
+      scale_fill_manual(
+        name = "",
+        values = c(
+          present.colour,
+          missing.colour
+        ),
+        labels = c(
+          present.label,
+          missing.label
+        )
+      ) +
+      scale_x_discrete(
+        position = "top",
+        limits = names(x),
+        labels = names(x)
+      )
+  }
    
    
 }
