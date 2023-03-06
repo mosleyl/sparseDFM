@@ -80,7 +80,9 @@
 #'      \code{num_iter} \tab\tab number of iterations taken by the EM algorithm. \cr\cr
 #'      \code{tol} \tab\tab tolerance for EM convergence. Matches \code{threshold} in the input. \cr\cr
 #'      \code{max_iter} \tab\tab maximum number of iterations allowed for the EM algorithm. Matches \code{max_iter} in the input. \cr\cr
+#'      \code{em_time} \tab\tab time taken for EM convergence \cr\cr
 #'      }
+#'  \item{\code{alpha.output}}{Parameter and state outputs for each L1-norm penalty parameter in \code{alphas} if \code{store.parameters = TRUE}. \cr\cr}
 #'  }
 #'  
 #' @references 
@@ -478,8 +480,11 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
     ## EM Algorithm
           
       # EM iterations function
+        st.em = Sys.time()
         EM.fit <- EM(X, a0_0, P0_0, A.tilde, Lambda.tilde, Sigma.eta, Sigma.u.tilde, 
                    err = err, kalman = kalman, sparse = FALSE, max_iter = max_iter, threshold = threshold)
+        et.em = Sys.time()
+        time.em = et.em - st.em
                    
       
       # Optimal parameters
@@ -570,7 +575,8 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                 loglik = loglik.store,
                                 num_iter = num_iter,
                                 tol = threshold,
-                                max_iter = max_iter))
+                                max_iter = max_iter,
+                                em_time = time.em))
         
         
       }else {
@@ -614,7 +620,8 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                 loglik = loglik.store,
                                 num_iter = num_iter,
                                 tol = threshold,
-                                max_iter = max_iter))
+                                max_iter = max_iter,
+                                em_time = time.em))
         
         
       }
@@ -647,6 +654,7 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         num_iter = c()
         best.bic <- .Machine$double.xmax
         alpha.output = list()
+        time.emsparse = c()
         
         for(alphas.index in 1:length(alphas)) {
           
@@ -667,13 +675,17 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
           
           # EM iterations function
             
+            st.emsparse = Sys.time()
             EM.fit <- EM(X, a0_0, P0_0, A.tilde, Lambda.tilde, Sigma.eta, Sigma.u.tilde, 
                        alpha.lasso = alpha.value, err = err, kalman = kalman, sparse = TRUE, 
                        max_iter = max_iter, threshold = threshold)
+            et.emsparse = Sys.time()
+            time.emsparse[alphas.index] = et.emsparse - st.emsparse
           
           # store number of iterations for each alpha
             
             num_iter[alphas.index] = EM.fit$num_iter
+            
           
           # check if a column of Lambda has been set entirely to 0
             
@@ -805,7 +817,8 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
         
         
       ## Store the optimal outputs  
-      
+        time.emsparse = time.emsparse[1:length(bic)]
+        num_iter = num_iter[1:length(bic)]
         alphas.used = alphas[1:length(bic)]
         best.alpha = alphas[which.min(bic)]
         loglik.store = best.EM$loglik.store 
@@ -896,7 +909,8 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   loglik = loglik.store,
                                   num_iter = num_iter,
                                   tol = threshold,
-                                  max_iter = max_iter),
+                                  max_iter = max_iter,
+                                  em_time = time.emsparse),
                         alpha.output = alpha.output)
 
           
@@ -944,7 +958,8 @@ sparseDFM <- function(X, r, q = 0, alphas = logspace(-2,3,100), alg = 'EM-sparse
                                   loglik = loglik.store,
                                   num_iter = num_iter,
                                   tol = threshold,
-                                  max_iter = max_iter),
+                                  max_iter = max_iter,
+                                  em_time = time.emsparse),
                         alpha.output = alpha.output)
           
           

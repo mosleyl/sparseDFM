@@ -99,7 +99,9 @@ A list-of-lists-like object of class 'sparseDFM' with the following elements:
 \code{num_iter} \tab\tab number of iterations taken by the EM algorithm. \cr\cr
 \code{tol} \tab\tab tolerance for EM convergence. Matches \code{threshold} in the input. \cr\cr
 \code{max_iter} \tab\tab maximum number of iterations allowed for the EM algorithm. Matches \code{max_iter} in the input. \cr\cr
+\code{em_time} \tab\tab time taken for EM convergence \cr\cr
 }
+\item{\code{alpha.output}}{Parameter and state outputs for each L1-norm penalty parameter in \code{alphas} if \code{store.parameters = TRUE}. \cr\cr}
 }
 }
 \description{
