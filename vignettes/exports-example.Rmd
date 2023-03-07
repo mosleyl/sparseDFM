@@ -100,7 +100,7 @@ We now tune for the number of factors to use:
 tuneFactors(new_data)
 ```
 
-According to the Bai and Ng (2002)^[Bai, J., & Ng, S. (2002). Determining the number of factors in approximate factor models. *Econometrica, 70*(1), 191-221.] information criteria, the best number of factors to use is 7. However, the screeplot seems to sugest that after 4 factors, the addition of more factors does not add that much in terms of explaining the variance of the data. For this reason, we choose to use 4 factors when modelling. 
+According to the Bai and Ng (2002)^[Bai, J., & Ng, S. (2002). Determining the number of factors in approximate factor models. *Econometrica, 70*(1), 191-221.] information criteria, the best number of factors to use is 7. However, the screeplot seems to suggest that after 4 factors, the addition of more factors does not add that much in terms of explaining the variance of the data. For this reason, we choose to use 4 factors when modelling. 
 
 We now fit a regular DFM and a Sparse DFM to the data with 4 factors:
 ```{r, cache = TRUE}
@@ -360,5 +360,5 @@ mean(err2.dfm)
 mean(err2.sdfm)
 ```
 
-The results show that Sparse DFM is performing better than a regular DFM in this nowcasting exercise for trade in goods. It has a lower average mean absolute error and tighter bands around the median. As expected, the error for horizon 1 is slightly lower than horizon 1 as it is able to exploit all indicators with a 1 month lag in its estimation.
+The results show that Sparse DFM is performing better than a regular DFM in this nowcasting exercise for trade in goods. It has a lower average mean absolute error and tighter bands around the median. As expected, the error for horizon 1 is slightly lower than horizon 2 as it is able to exploit all indicators with a 1 month lag in its estimation.
 

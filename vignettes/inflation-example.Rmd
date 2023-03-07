@@ -142,7 +142,7 @@ fit.sdfm <- sparseDFM(new_data, r = 3, alphas = logspace(-2,3,100), alg = 'EM-sp
 summary(fit.sdfm)
 ```
 
-We tune for the best $\ell_1$-norm penalty parameter using BIC^[See (cite)] across a logspace grid of values from $10^{-2}$ to $10^{3}$. This is the default grid to cover a wide range of values. The user can input any grid or a single value for the penalty using parameter `alphas =`. We stop searching over the grid of alphas as soon as an entire column of the loadings matrix $\bm{\Lambda}$ is entirely 0. We can find which $\ell_1$-norm penalty parameter was chosen as best and observe the BIC values for each parameter considered by doing:
+We tune for the best $\ell_1$-norm penalty parameter using BIC^[See (cite)] across a logspace grid of values from $10^{-2}$ to $10^{3}$. This is the default grid to cover a wide range of values. The user can input any grid or a single value for the penalty using parameter `alphas =`. We stop searching over the grid of alphas as soon as an entire column of the loadings matrix ${\Lambda}$ is entirely 0. We can find which $\ell_1$-norm penalty parameter was chosen as best and observe the BIC values for each parameter considered by doing:
 
 ```{r}
 # Grid of alpha values used before a column of Lambda was set entirely to 0 
