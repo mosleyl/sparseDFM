@@ -58,7 +58,7 @@ EM <- function(X, a0_0, P0_0, A.tilde, Lambda.tilde, Sigma.eta, Sigma.u.tilde, a
       Pt_tlag_n = KFS$Pt_tlag_n   # state covariance with lag: k x k x n array (t=1,...,n)
       
       loglik = KFS$logl           # log-likelihood value 
-      
+
       num_iter = num_iter + 1     # new iteration
       
       

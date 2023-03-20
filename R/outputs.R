@@ -124,7 +124,6 @@ summary.sparseDFM <- function(object,...){
 #' @importFrom Matrix Matrix image 
 #' @importFrom ggplot2 ggplot aes geom_segment theme_light scale_color_manual theme element_text element_blank xlab ylab ggtitle geom_boxplot
 #' @importFrom graphics par matplot lines box axis mtext boxplot plot abline
-#' @importFrom reshape2 melt
 #' @importFrom stats is.ts ts.plot ts start frequency 
 #' 
 #' @export 
@@ -472,13 +471,24 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
         colnames(resids) = which.series
       }
     
-      data_long = melt(resids)
+      # data_long = melt(resids)
+      res = as.vector(resids)
+      colnms = colnames(resids)
+      
+      data_long = cbind(rep(1:nrow(resids),ncol(resids)), rep(colnms,each=nrow(resids)), res)
+      
       
       data_long = data_long[,-1]
       
+      data_long = as.data.frame(data_long)
+      
+      data_long <- apply(data_long, 2, function(x) as.numeric(as.character(x)))
+      
+      data_long = as.data.frame(data_long)  
+      
 
       # plot
-      ggplot(data_long, aes(x=factor(Var2), y=value)) +
+      ggplot(data_long, aes(x=factor(V1), y=res)) +
         geom_boxplot() +
         theme_light() +
         theme(
