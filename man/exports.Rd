@@ -25,6 +25,7 @@ exports
 A full dataset used for nowcasting UK trade in goods (Exports) including the 9 export target series and 436 monthly indicator series.
 }
 \examples{
+# load exports data 
 data = exports 
 
 }

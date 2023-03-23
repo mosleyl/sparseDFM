@@ -56,7 +56,7 @@ sparseDFM(
 \item{threshold}{Numeric. Tolerance on EM iterates. Default is 1e-4.}
 }
 \value{
-A list-of-lists-like object of class 'sparseDFM' with the following elements:
+A list-of-lists-like S3 object of class 'sparseDFM' with the following elements:
 \item{\code{data}}{A list containing information about the data with the following elements:
 \tabular{llll}{
 \code{X} \tab\tab is the original \eqn{n \times p}{n x p} numeric data matrix of (stationary) time series. \cr\cr
@@ -101,7 +101,8 @@ A list-of-lists-like object of class 'sparseDFM' with the following elements:
 \code{max_iter} \tab\tab maximum number of iterations allowed for the EM algorithm. Matches \code{max_iter} in the input. \cr\cr
 \code{em_time} \tab\tab time taken for EM convergence \cr\cr
 }
-\item{\code{alpha.output}}{Parameter and state outputs for each L1-norm penalty parameter in \code{alphas} if \code{store.parameters = TRUE}. \cr\cr}
+}
+\item{\code{alpha.output}}{Parameter and state outputs for each L1-norm penalty parameter in \code{alphas} if \code{store.parameters = TRUE}.
 }
 }
 \description{
@@ -119,6 +120,9 @@ For full details of the model please refer to Mosley et al. (2023).
 # load inflation data set 
 data = inflation
 
+# reduce the size for these examples - full data found in vignette 
+data = data[1:60,]
+
 # make stationary by taking first differences 
 new_data = transformData(data, rep(2,ncol(data)))
 
@@ -134,7 +138,7 @@ fit.2stage <- sparseDFM(new_data, r = 3, alg = '2Stage')
 # fit a DFM using EM algorithm with 3 factors 
 fit.dfm <- sparseDFM(new_data, r = 3, alg = 'EM')
 
-# fit a Sparse DFM with 3 factors 
+# fit a Sparse DFM with 3 factors
 fit.sdfm <- sparseDFM(new_data, r = 3, alg = 'EM-sparse')
 
 # observe the factor loadings of the sparse DFM

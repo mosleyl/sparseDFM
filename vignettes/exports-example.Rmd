@@ -51,7 +51,7 @@ These target series are released with a 2 month publication delay and hence the 
 * **Consumer Confidence Index (CCI)** - Opinion surveys on future developments of households’ consumption and saving - *1 month lag* - *1 series*
 * **Google Trends (GT)** - Popularity scores of 14 google search queries related to trade in goods - *real-time* - *14 series*
 
-The first part of this vignette uses the `sparseDFM()` function to fit a regular DFM and a Sparse DFM to the entire dataset of January 2004 to October 2022 with the goal of estimating the missing target series data in September and October of 2022. We explore the `plot()` and `predict()` capabilities of the package and assess the benefit of a sparse DFM in terms of interpreting factor structure and accuracy of predictions. In the second part of the vignette we give an example of how to set up a pseudo-real-time nowcasting exercise to nowcast the 2 month end-of-sample missing data for the targets in an expanding window from August 2018 to July 2022. 
+This vignette uses the `sparseDFM()` function to fit a regular DFM and a Sparse DFM to the entire dataset of January 2004 to October 2022 with the goal of estimating the missing target series data in September and October of 2022. We explore the `plot()` and `predict()` capabilities of the package and assess the benefit of a sparse DFM in terms of interpreting factor structure and accuracy of predictions. 
 
 ## Exploring the Data 
 
@@ -103,7 +103,7 @@ tuneFactors(new_data)
 According to the Bai and Ng (2002)^[Bai, J., & Ng, S. (2002). Determining the number of factors in approximate factor models. *Econometrica, 70*(1), 191-221.] information criteria, the best number of factors to use is 7. However, the screeplot seems to suggest that after 4 factors, the addition of more factors does not add that much in terms of explaining the variance of the data. For this reason, we choose to use 4 factors when modelling. 
 
 We now fit a regular DFM and a Sparse DFM to the data with 4 factors:
-```{r, cache = TRUE}
+```{r}
 # Regular DFM fit - takes around 18 seconds 
 fit.dfm <- sparseDFM(new_data, r = 4, alg = 'EM')
 
@@ -217,148 +217,7 @@ sdfm_sept_nowcast,
 sdfm_oct_nowcast)
 ```
 
-## Pseudo Real-Time Nowcasting Exercise 
 
-We have fitted a regular DFM and a Sparse DFM to the trade in goods data above, but how do we know which one to use? We can set up a pseudo real-time nowcasting exercise where we try and predict the missing ragged edge in an expanding window from August 2018 to July 2022. As it would be difficult to store all previous vintages of data back to 2018, we just use the complete data set (up to October 2022) and at each nowcasting window create a ragged edge following the 2 month lag for the targets and IoP and 1 month lag for everything else except google trends. We begin with the window Jan 2004 - Aug 2018, where the current available target exports data is June 2018. We produce nowcasts for July 2018 (representing a nowcast 1 month prior to release) and for August 2018 (representing a nowcast 2 months prior to release). We produce these nowcasts for horizon 1 and 2 for every month up to July 2022 - a total of 48 months. The pseudo real-time nowcast can be coded as shown below. Note, we fit a new model at each nowcasting window and re-tune for the best L1-norm penalty parameter. An alternative could be to store the model parameters estimated from one fit of the SDFM to a particular time window and then just run the `kalmanUnivariate()` function on these stored parameters at each time window. As the nowcasting loop below takes some time to finish, we have stored the results of the fits in the rda files *exports_DFM_fit* and *exports_SDFM_fit* and present how to access these results. 
-
-```{r, eval = FALSE}
-## Start and end dates 
-start_date <- as.Date("2018/08/01")
-end_date = as.Date("2022/07/01")
-
-## Generating range of dates
-range <- seq(start_date, end_date,"months")
-
-## Ragged edge variable information (match to column variables)
-# 98 series with 2 month lag (targets,IoP)
-# 333 series with 1 month lag (CPI,PPI,exchange,conf)
-# 14 series with 0 month lag (google trends)
-ragged_edge_values = c(rep(2,98), rep(1,333), rep(0,14))
-
-## Remove missing jan 2004 and make time series from Feb 2004
-new_data = new_data[-1,]
-new_data = ts(new_data, start = c(2004,2), frequency = 12)
-
-## Expanding window nowcasting loop and store the DFM and SDFM fits
-fit.dfm <- fit.sdfm <- list()
-
-for(t in 1:length(range)){
-  
-  date = range[t]
-  date.year = as.numeric(format(date, "%Y"))
-  date.month = as.numeric(format(date, "%m"))
-  
-  Y = window(new_data, end = c(date.year, date.month))
-  Y = raggedEdge(Y, ragged_edge_values)
-  
-  fit.dfm[[t]] <- sparseDFM(Y, r = 4, alg = 'EM')
-  fit.sdfm[[t]] <- sparseDFM(Y, r = 4, q = 9, alg = 'EM-sparse')
-  
-}
-
-```
-
-We have stored these results in the rda files: *exports_DFM_fit* and *exports_SDFM_fit*. We access these results and compute error metrics like so:
-
-```{r}
-## Load the stored model fits into R
-
-dfm <- exports_DFM_fit
-sdfm <- exports_SDFM_fit
-
-## Get the original data in levels for the targets (with Jan 2004 removed)
-
-data_exports = data[-1,]
-data_exports = data_exports[,1:9]
-
-## Compute errors for the DFM fits at horizon 1 and 2 for each nowcasting window
-
-# n = 175 represents August 2018 (for the 1st nowcasting window)
-n = 175
-
-err1.dfm = err2.dfm = c()
-
-for(t in 1:48){
-  
-  # extract nowcasts for horizon 1 and 2 of the targets 
-  hor1 = dfm[[t]]$data$fitted.unscaled[n-1,1:9]
-  hor2 = dfm[[t]]$data$fitted.unscaled[n,1:9]
-  
-  # true data 
-  data.obs = data_exports[n-2,]
-  
-  # nowcasts 
-  for1 = data.obs + hor1 
-  for2 = for1 + hor2
-  
-  # mean absolute error
-  err1.dfm[t] = mean(abs(for1 - data_exports[n-1,]))
-  err2.dfm[t] = mean(abs(for2 - data_exports[n,]))
-  
-  # move window along a month 
-  n = n + 1 
-}
-
-## Compute errors for the Sparse DFM fits at horizon 1 and 2 for each nowcasting window
-
-# n = 175 represents August 2018 (for the 1st nowcasting window)
-n = 175
-err1.sdfm = err2.sdfm = c()
-
-for(t in 1:48){
-  
-  # extract nowcasts for horizon 1 and 2 of the targets 
-  hor1 = sdfm[[t]]$data$fitted.unscaled[n-1,1:9]
-  hor2 = sdfm[[t]]$data$fitted.unscaled[n,1:9]
-  
-  # true data 
-  data.obs = data_exports[n-2,]
-  
-  # nowcasts 
-  for1 = data.obs + hor1 
-  for2 = for1 + hor2
-  
-  # mean absolute error
-  err1.sdfm[t] = mean(abs(for1 - data_exports[n-1,]))
-  err2.sdfm[t] = mean(abs(for2 - data_exports[n,]))
-  
-  # move window along a month 
-  n = n + 1 
-}
-```
-
-
-We can now present results on the accuracy at 1 and 2 month horizons for both models. We work out quantiles and an average across all 48 months in the nowcasting expanding window for both horizons. 
-
-```{r}
-## Quantiles
-
-# DFM horizon 1 
-quantile(err1.dfm)
-
-# Sparse DFM horizon 1
-quantile(err1.sdfm)
-
-# DFM horizon 2
-quantile(err2.dfm)
-
-# Sparse DFM horizon 2
-quantile(err2.sdfm)
-
-## Average 
-
-# DFM horizon 1 
-mean(err1.dfm)
-
-# Sparse DFM horizon 1
-mean(err1.sdfm)
-
-# DFM horizon 2
-mean(err2.dfm)
-
-# Sparse DFM horizon 2
-mean(err2.sdfm)
-```
 
 The results show that Sparse DFM is performing better than a regular DFM in this nowcasting exercise for trade in goods. It has a lower average mean absolute error and tighter bands around the median. As expected, the error for horizon 1 is slightly lower than horizon 2 as it is able to exploit all indicators with a 1 month lag in its estimation.
 

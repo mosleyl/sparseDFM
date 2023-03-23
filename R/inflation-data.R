@@ -12,6 +12,7 @@
 #' @source <https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceindices>
 #' 
 #' @examples 
+#' # load inflation data 
 #' data = inflation 
 #' 
 "inflation"

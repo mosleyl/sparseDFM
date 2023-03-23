@@ -43,6 +43,7 @@ A subset of quarterly CPI Index data from the ONS Inflation data (Q4 2022 releas
 \examples{
 data = inflation 
 
+# load inflation data 
 data = inflation 
 
 }

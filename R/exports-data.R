@@ -12,6 +12,7 @@
 #' @source <https://www.ons.gov.uk/>
 #' 
 #' @examples 
+#' # load exports data 
 #' data = exports 
 #' 
 "exports"

@@ -20,6 +20,9 @@ missing_data_plot(
 
 \item{use.names}{Logical. Label the axis with data variables names. Default is TRUE. Set to FALSE to remove.}
 }
+\value{
+A matrix plot showing where missing data is present.
+}
 \description{
 Visualise the amount of missing data in a data matrix or data frame.
 }

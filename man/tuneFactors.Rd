@@ -38,7 +38,7 @@ To calculate the number of factors to use in the model, the information criteria
 
 The sum of squared residuals for \eqn{r}{r} factors \eqn{V_r(\hat{\bm{F}},\hat{\bm{\Lambda}}) = \sum_{i=1}^p\sum_{t=1}^n E[\hat{\epsilon}_{i,t}^2]/np}{V_r(\hat{F},\hat{\Lambda}) = \sum_{i=1}^p\sum_{t=1}^n E[\hat{\epsilon}_{i,t}^2]/np} with \eqn{\hat{\epsilon}_{i,t} = X_{t,i}-\hat{\bm{F}}_t\hat{\bm{\Lambda}}_i}{\hat{\epsilon}_{i,t} = X_{t,i}-\hat{F}_t\hat{\Lambda}_i} is found using PCA on the standardized data set \eqn{\bm{X}}{X}. The estimated factors \eqn{\hat{\bm{F}}}{\hat{F}} corresponding to the principle components and the estimated loadings \eqn{\hat{\bm{\Lambda}}}{\hat{\Lambda}} corresponding to the eigenvectors. Should the data contain missing values, then the missing data is interpolated using \code{fillNA}.
 
-The number of factors to use will correspond to \eqn{\argmin_r IC_i(r)}{argmin(r) IC(i)(r)} for \eqn{i=1,2}{i=1,2} or \eqn{3}{3}. Type 2 is the highest when working in finite samples and therefore is set to default.
+The number of factors to use will correspond to \eqn{argmin_r IC_i(r)}{argmin(r) IC(i)(r)} for \eqn{i=1,2}{i=1,2} or \eqn{3}{3}. Type 2 is the highest when working in finite samples and therefore is set to default.
 }
 \references{
 Bai, J., & Ng, S. (2002). Determining the number of factors in approximate factor models. \emph{Econometrica, 70}(1), 191-221.

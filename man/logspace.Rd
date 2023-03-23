@@ -13,6 +13,9 @@ logspace(x1, x2, n = 50)
 
 \item{n}{length}
 }
+\value{
+Vector of log10 spaced values of length n
+}
 \description{
 Produce a vector of log10 space values
 }

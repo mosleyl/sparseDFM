@@ -22,4 +22,5 @@ data = matrix(rnorm(100),ncol=10)
 pub_lags = c(rep(2,5),rep(1,3),rep(0,2))
 new_data = raggedEdge(data, pub_lags)
 
+
 }

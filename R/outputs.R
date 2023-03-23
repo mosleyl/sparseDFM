@@ -143,11 +143,15 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
   }
   
   # global variable declaration 
-  y = Group = Var2 = value = NULL
+  y = Group = V1 = res = NULL
+  
+  oldpar <- par(no.readonly = TRUE) 
+  on.exit(par(oldpar)) 
   
   ## type = 'factor'
   
   if(type == 'factor'){
+    
     
     par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
     par(mfrow = c(1,1))
@@ -185,8 +189,9 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
       if(k > 1){
         
-        oldpar <- par(mar = c(0, 5, 0, 2), oma = c(6, 0, 5, 0), mfrow = c(k, 1L))
-        on.exit(par(oldpar))
+        #oldpar <- par(mar = c(0, 5, 0, 2), oma = c(6, 0, 5, 0), mfrow = c(k, 1L))
+        #on.exit(par(oldpar))
+        par(mar = c(0, 5, 0, 2), oma = c(6, 0, 5, 0), mfrow = c(k, 1L))
         
         for(i in which.factors) {
           
@@ -219,10 +224,11 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       }
     }else{
       
+      
       if(k > 1){
         
-        oldpar <- par(mar = c(0, 5, 0, 2), oma = c(6, 0, 5, 0), mfrow = c(k, 1L))
-        on.exit(par(oldpar))
+        par(mar = c(0, 5, 0, 2), oma = c(6, 0, 5, 0), mfrow = c(k, 1L))
+        
         
         for(i in which.factors) {
           
@@ -256,9 +262,6 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       
     }
     
-    # re-set back to original 
-    par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
-    par(mfrow = c(1,1))
     
   }
   
@@ -272,10 +275,6 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       }
     }
     
-    
-    # make sure it is of normal display 
-    # par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
-    # par(mfrow = c(1,1))
     
     which.factors = sort(which.factors)
     
@@ -321,10 +320,7 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
   ## type = 'loading.lineplot'
   
   else if(type == 'loading.lineplot'){
-    
-    # par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
-    # par(mfrow = c(1,1))
-    
+
     dots <- list(...)
     
     if(alpha_index == 'best'){
@@ -385,9 +381,7 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     if(is.null(group.cols)){
       stop("You must specify group.cols.")
     }
-    
-    # par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
-    # par(mfrow = c(1,1))
+
     
     dots <- list(...)
     
@@ -443,9 +437,7 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
     
     if(residual.type == 'scatter' && is.null(scatter.series)) stop("No series chosen in scatter.series")
     
-    # par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
-    # par(mfrow = c(1,1))
-    # 
+
     dots = list(...)
     
     series.names = unlist(dimnames(x$params$Lambda[which.series,])[1])
@@ -523,8 +515,6 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
   ## type = 'lasso.bic'
   else if(type == 'lasso.bic'){
     
-    # par(mar=c(5.1, 4.1, 4.1, 2.1), mgp=c(3, 1, 0), las=0)
-    # par(mfrow = c(1,1))
     par(xpd=FALSE)
     
     dots = list(...)
@@ -700,7 +690,7 @@ predict.sparseDFM <- function(object, h = 1, standardize = FALSE, alpha_index = 
     
     A = alpha_out$params$A
     Lambda = alpha_out$params$Lambda
-    n = dim(alpha-out$state$factors)[1]
+    n = dim(alpha_out$state$factors)[1]
     r = dim(alpha_out$state$factors)[2]
     p = dim(object$data$X.bal)[2]
     F_old = alpha_out$state$factors[n,]
@@ -801,6 +791,9 @@ print.sparseDFM_forecast <- function(x,...){
 #' @param use.names Logical. Label the axis with data variables names. Default is TRUE. Set to FALSE to remove. 
 #' 
 #' @importFrom ggplot2 ggplot geom_raster aes theme_minimal theme element_text labs scale_y_reverse guides scale_fill_manual scale_x_discrete 
+#' 
+#' @returns 
+#' A matrix plot showing where missing data is present. 
 #' 
 #' @export 
 

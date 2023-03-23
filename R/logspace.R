@@ -22,6 +22,9 @@ linspace <- function(x1, x2, n=100) {
 #' @param x2 upper bound 
 #' @param n length 
 #' 
+#' @returns
+#' Vector of log10 spaced values of length n 
+#' 
 #' @export 
 
 logspace <- function(x1, x2, n=50) {

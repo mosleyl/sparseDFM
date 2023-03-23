@@ -1,31 +1,37 @@
 Package: sparseDFM
-Title: sparseDFM: An R Package To Estimate Dynamic Factor Models With Sparse Loadings
-Version: 0.0.0.9000
+Title: Estimate Dynamic Factor Models with Sparse Loadings
+Version: 1.0
 Authors@R: 
-    c(person("Luke", "Mosley", , "l.mosley@lancaster.ac.uk", role = c("aut"),
-           comment = c(ORCID = "YOUR-ORCID-ID")),
-      person("Tak-Shing", "Chan", , "t.t.chan@lancaster.ac.uk", role = c("aut"),
-           comment = c(ORCID = "YOUR-ORCID-ID")),
-      person("Alex", "Gibberd", , "a.gibberd@lancaster.ac.uk", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-           )
-Description: Estimate Dynamic Factor Models (with optional sparse loadings) via Expectation Maximisation.
+    c(person(given = "Luke",
+           family = "Mosley",
+           role = c("aut"),
+           email = "l.mosley@lancaster.ac.uk"),
+      person(given = "Tak-Shing",
+           family = "Chan",
+           role = c("aut"),
+           email = "t.t.chan@lancaster.ac.uk"),
+      person(given = "Alex",
+           family = "Gibberd",
+           role = c("aut", "cre"),
+           email = "a.gibberd@lancaster.ac.uk")
+      )
+Description: Implementation of various estimation methods for dynamic factor models (DFMs) including principal components analysis (PCA) Stock and Watson (2002) <doi:10.1198/016214502388618960>, 2Stage Giannone et al. (2008) <doi:10.1016/j.jmoneco.2008.05.010>, expectation-maximisation (EM) Banbura and Modugno (2014) <doi:10.1002/jae.2306>, and the novel EM-sparse approach for sparse DFMs Mosley et al. (2023) <arXiv:2303.11892>. Options to use classic multivariate Kalman filter and smoother (KFS) equations from Shumway and Stoffer (1982) <doi:10.1111/j.1467-9892.1982.tb00349.x> or fast univariate KFS equations from Koopman and Durbin (2000) <doi:10.1111/1467-9892.00186>, and options for independent and identically distributed (IID) white noise or auto-regressive (AR(1)) idiosyncratic errors. Algorithms coded in 'C++' and linked to R via 'RcppArmadillo'.   
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
     Rcpp (>= 1.0.9),
-	Matrix,
-	ggplot2,
-	reshape2
+    Matrix,
+    ggplot2
 LinkingTo: 
     Rcpp, 
     RcppArmadillo
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    gridExtra
 VignetteBuilder: knitr
 Depends: 
-    R (>= 2.10)
+    R (>= 3.3.0)
 LazyData: true
