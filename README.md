@@ -23,8 +23,8 @@ Alternative software that implement classic DFMs in R include the **MARSS** pack
 
 We provide two vignettes in the package:
 
-1. Analysing quarterly CPI (consumer price inflation) index data for the UK: vignettes/inflation-example.html
-2. Nowcasting Trade in Goods for UK exports of the 9 main commodities worldwide: vignettes/exports-example.html
+1. Analysing quarterly CPI (consumer price inflation) index data for the UK
+2. Nowcasting Trade in Goods for UK exports of the 9 main commodities worldwide
 
 We provide a detailed software paper on the package:
 
