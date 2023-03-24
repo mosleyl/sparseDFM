@@ -21,10 +21,17 @@ Alternative software that implement classic DFMs in R include the **MARSS** pack
 
 ## Tutorials on Package Use
 
+Installation:
+
+* Install the package into R using: `install.packages('sparseDFM')`
+* Load into the R environment using: `library(sparseDFM)`
+
 We provide two vignettes in the package:
 
 1. Analysing quarterly CPI (consumer price inflation) index data for the UK
 2. Nowcasting Trade in Goods for UK exports of the 9 main commodities worldwide
+
+that can be accessed using `browseVignettes('sparseDFM')`.
 
 We provide a detailed software paper on the package:
 
