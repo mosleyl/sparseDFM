@@ -461,11 +461,15 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       
       if(is.null(series.names)){
         colnames(resids) = which.series
+        colnms = colnames(resids)
+      }else{
+        colnames(resids) = series.names
+        colnms = colnames(resids)
       }
     
-      # data_long = melt(resids)
+      #data_long = reshape2::melt(resids)
       res = as.vector(resids)
-      colnms = colnames(resids)
+      #colnms = colnames(resids)
       
       data_long = cbind(rep(1:nrow(resids),ncol(resids)), rep(colnms,each=nrow(resids)), res)
       
@@ -474,9 +478,8 @@ plot.sparseDFM <- function(x, type = 'factor', which.factors = 1:(dim(x$state$fa
       
       data_long = as.data.frame(data_long)
       
-      data_long <- apply(data_long, 2, function(x) as.numeric(as.character(x)))
-      
-      data_long = as.data.frame(data_long)  
+      data_long[,2] = as.numeric(data_long[,2])
+      data_long[,1] = as.factor(data_long[,1])
       
 
       # plot
